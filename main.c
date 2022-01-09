@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	
 	printf("Encrypting file: %d bytes long", size);
 	
-	if(encryptData(data, size, argv[1]) != 1)
+	if(unencryptData(data, size, argv[1]) != 1)
 	{
 	 	printf("Horrible disaster. The encryption process failed.");
 	 	return 0;
@@ -80,6 +80,7 @@ int encryptData(char *data, int size, char *key)
 	
 	return 1;
 }
+
 /** does the opposite of the encryption (obv)
  * looping through every data byte...
  * 	1. shift bits right 2 notches, wrap the two bits pushed off to the front
