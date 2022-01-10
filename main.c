@@ -3,7 +3,7 @@
 #include <string.h>
 
 typedef unsigned char Byte;
-enum options {ENCRYPT = 1, DENCRYPT};
+enum options {ENCRYPT = 1, DECRYPT};
 
 int encryptData(Byte *data, int size, char *key);
 int decryptData(Byte *data, int size, char *key);
@@ -60,6 +60,15 @@ int main(int argc, char *argv[])
 			{
 				option = ENCRYPT;
 			}
+			else if(strcmp(argv[i+1], 'decrypt') == 0)
+			{
+				option = DECRYPT;
+			}
+			else
+			{
+				printf("%s is not a valid option", argv[i + 1]);
+				return 0;
+			}
 		}
 	}
 	
@@ -82,7 +91,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	file = fopen(argv[1], "r");
+	file = fopen(fileName, "r");
 	if(!file)
 	{
 		printf("File %s not found\n", fileName);
@@ -99,11 +108,20 @@ int main(int argc, char *argv[])
 	fread(data, size, 1, file);
 	fclose(file);
 	
-	printf("Encrypting file: %d bytes long", size);
-	
-	if(unencryptData(data, size, argv[1]) != 1)
+	if(option == ENCRYPT)
 	{
-	 	printf("Horrible disaster. The encryption process failed.");
+		encryptData(data, size, password);
+		printf("Encrypted file: %d bytes long", size);
+		return 0;
+	}
+	else if(option == DECRYPT)
+	{
+		decryptData(data, size, password);
+		printf("Decrypted data %d bytes long", size);
+		return 0;
+	}
+	else {
+	 	printf("Horrible disaster. Exiting...");
 	 	return 0;
 	}
 	
