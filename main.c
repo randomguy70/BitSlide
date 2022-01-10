@@ -3,7 +3,7 @@
 #include <string.h>
 
 typedef unsigned char Byte;
-enum options {ENCRYPT = 1, DECRYPT};
+enum Options {ENCRYPT = 1, DECRYPT};
 
 int encryptData(Byte *data, int size, char *key);
 int decryptData(Byte *data, int size, char *key);
@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 	char *fileName = NULL;
 	char *password = NULL;
-	enum option = 0;
+	enum Options option = 0;
 	
 	FILE *file;
 	Byte *data;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			
 			password = argv[i + 1];
 		}
-		if(strcmp(argv[i], '-o') == 0)
+		if(strcmp(argv[i], "-o") == 0)
 		{
 			if(i + 1 > argc)
 			{
@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
 				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
 				return 0;
 			}
-			if(strcmp(argv[i+1], 'encrypt') == 0)
+			if(strcmp(argv[i+1], "encrypt") == 0)
 			{
 				option = ENCRYPT;
 			}
-			else if(strcmp(argv[i+1], 'decrypt') == 0)
+			else if(strcmp(argv[i+1], "decrypt") == 0)
 			{
 				option = DECRYPT;
 			}
@@ -111,12 +111,34 @@ int main(int argc, char *argv[])
 	if(option == ENCRYPT)
 	{
 		encryptData(data, size, password);
+		
+		file = fopen(fileName, "w");
+		if(!file)
+		{
+			printf("Original file not found");
+			return 0;
+		}
+		fseek(file, 0L, SEEK_SET);
+		fwrite(data, size, 1, file);
+		fclose(file);
+		
 		printf("Encrypted file: %d bytes long", size);
 		return 0;
 	}
 	else if(option == DECRYPT)
 	{
 		decryptData(data, size, password);
+		
+		file = fopen(fileName, "w");
+		if(!file)
+		{
+			printf("Original file not found");
+			return 0;
+		}
+		fseek(file, 0L, SEEK_SET);
+		fwrite(data, size, 1, file);
+		fclose(file);
+		
 		printf("Decrypted data %d bytes long", size);
 		return 0;
 	}
@@ -124,11 +146,6 @@ int main(int argc, char *argv[])
 	 	printf("Horrible disaster. Exiting...");
 	 	return 0;
 	}
-	
-	file = fopen(argv[1], "w");
-	fseek(file, 0L, SEEK_SET);
-	fwrite(data, size, 1, file);
-	fclose(file);
 	
 	return 0;
 }
