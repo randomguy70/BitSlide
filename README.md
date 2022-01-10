@@ -1,2 +1,2 @@
 # simple_txt_encrypter
-# It doesn't work yet btw
+## I will be adding many more operations for added security...
