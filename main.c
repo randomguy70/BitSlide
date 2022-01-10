@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-int encryptData(char *data, int size, char *key);
-int unencryptData(char *data, int size, char *key);
+typedef unsigned char Byte;
+
+int encryptData(Byte *data, int size, char *key);
+int unencryptData(Byte *data, int size, char *key);
 
 int main(int argc, char *argv[])
 {
 	FILE *file;
-	char *data;
+	Byte *data;
 	int size;
 	
 	file = fopen(argv[1], "r");
@@ -54,16 +56,14 @@ int main(int argc, char *argv[])
  * looping through every data byte... 
  * 	1. += one byte from the key (increments & wraps back to beginning)
  * 	2. XOR with 0xe7
- * 	3. shift bits left 2 notches, wrap the 2 bits pushed off to the end of the byte
- * 	...
- *		...
+ * 	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
 */
 
-int encryptData(char *data, int size, char *key)
+int encryptData(Byte *data, int size, char *key)
 {
 	int keyLen = strlen(key);
 	int keyCursor = 0;
-	char temp = '\0';
+	Byte temp = '\0';
 	
 	for(int i=0; i<size; i++)
 	{
@@ -75,7 +75,7 @@ int encryptData(char *data, int size, char *key)
 		// 1100 0000
 		temp = data[i];
 		data[i] <<= 2;
-		data[i] ^= (temp >> 6);
+		data[i] += (temp >> 6);
 	}
 	
 	return 1;
@@ -83,23 +83,23 @@ int encryptData(char *data, int size, char *key)
 
 /** does the opposite of the encryption (obv)
  * looping through every data byte...
- * 	1. shift bits right 2 notches, wrap the two bits pushed off to the front
+ * 	1. shift bits right 2 notches, wrap the two bits pushed off to the left side of the byte
  * 	2. XOR with 0xe7
  * 	3. -= one byte from the key (increments & wraps around back to beginning)
 **/
 
-int unencryptData(char *data, int size, char *key)
+int unencryptData(Byte *data, int size, char *key)
 {
 	int keyLen = strlen(key);
 	int keyCursor = 0;
-	char temp = '\0';
+	Byte temp = '\0';
 	
 	for(int i=0; i<size; i++)
 	{
 		// 0000 0011
 		temp = data[i];
 		data[i] >>= 2;
-		data[i] ^= (temp << 6);
+		data[i] += (temp << 6);
 		
 		data[i] ^= 0xe7;
 		
