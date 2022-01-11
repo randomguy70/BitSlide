@@ -6,7 +6,7 @@
 
 int shiftCol(struct dataBlock *block, int col, int ticks, int dir)
 {
-	Byte *temp = malloc(block->height);
+	Byte *tempCol = malloc(block->height);
 	
 	// 0101 1010 1101 0100
 	// 1101 0100 0101 1010
@@ -16,10 +16,18 @@ int shiftCol(struct dataBlock *block, int col, int ticks, int dir)
 	// copy the column to preserve the wrapped bytes
 	for(int i=0; i<block->height; i++)
 	{
-		temp[i] = getByte(block, col, i);
+		tempCol[i] = getByte(block, col, i);
 	}
 	
-	
+	// shift down XXX (i haven't finished it, so it doesn't work)
+	if(dir == 1)
+	{
+		for(int i=block->height - ticks; i > -1; i-=ticks)
+		{
+			Byte byte = getByte(block, col, i);
+			setByte(byte, block, col, i+1);
+		}
+	}
 	
 	return ticks;
 }
