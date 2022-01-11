@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef unsigned char Byte;
-enum Options {ENCRYPT = 1, DECRYPT};
-
-int encryptData(Byte *data, int size, char *key);
-int decryptData(Byte *data, int size, char *key);
+#include "main.h"
 
 int main(int argc, char *argv[])
 {
