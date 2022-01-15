@@ -4,7 +4,7 @@
 #include "data_blocks.h"
 #include "main.h"
 
-int shiftCol(struct dataBlock *block, int col, int ticks, int dir)
+int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 {
 	Byte *tempCol = malloc(block->height);
 	
@@ -19,7 +19,7 @@ int shiftCol(struct dataBlock *block, int col, int ticks, int dir)
 		tempCol[i] = getByte(block, col, i);
 	}
 	
-	// shift down XXX (i haven't finished it, so it doesn't work)
+	// shift down XXX (I haven't finished it)
 	if(dir == 1)
 	{
 		for(int i=block->height - ticks; i > -1; i-=ticks)
@@ -32,12 +32,12 @@ int shiftCol(struct dataBlock *block, int col, int ticks, int dir)
 	return ticks;
 }
 
-Byte getByte(struct dataBlock *block, int col, int row)
+Byte getByte(struct DataBlock *block, int col, int row)
 {
 	return(block->data[col + row*block->width]);
 }
 
-Byte setByte(Byte value, struct dataBlock *block, int col, int row)
+Byte setByte(Byte value, struct DataBlock *block, int col, int row)
 {
 	block->data[col + row*block->width] = value;
 }
