@@ -1,0 +1,6 @@
+{
+	"files.associations": {
+		".ice": ".txt",
+		"data_blocks.h": "c"
+	}
+}

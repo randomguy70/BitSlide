@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "main.h"
+#include "data_blocks.h"
 
 int main(int argc, char *argv[])
 {
@@ -149,10 +150,10 @@ int main(int argc, char *argv[])
 /**
  * Steps:
  * looping through every data byte... 
- * 	1. += one byte from the key (increments & wraps back to beginning)
- * 	2. XOR with 0xe7
- * 	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
- * 	4. separate bytes into blocks, padd shift around the rows and columns
+ * 1	1. += one byte from the key (increments & wraps back to beginning)
+ * 1	2. XOR with 0xe7
+ * 1	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
+ * 0	4. separate bytes into blocks, padd shift around the rows and columns
 */
 
 int encryptData(Byte *data, int size, char *key)
@@ -160,6 +161,9 @@ int encryptData(Byte *data, int size, char *key)
 	int keyLen = strlen(key);
 	int keyCursor = 0;
 	Byte temp = '\0';
+	struct DataBlock *block;
+	int numBlocks;
+	int blockWidth = 10, blockHeight = 10; // should be derived from key
 	
 	for(int i=0; i<size; i++)
 	{
@@ -168,11 +172,13 @@ int encryptData(Byte *data, int size, char *key)
 		
 		data[i] ^= 0xe7;
 		
-		// 1100 0000
 		temp = data[i];
 		data[i] <<= 2;
 		data[i] += (temp >> 6);
 	}
+	
+	numBlocks = size / (blockWidth * blockHeight) + 1;
+	block = malloc(numBlocks * sizeof(struct DataBlock));
 	
 	return 1;
 }
