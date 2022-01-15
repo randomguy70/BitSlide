@@ -8,6 +8,15 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 {
 	Byte *tempCol = malloc(block->height);
 	
+	if(ticks == block->height)
+	{
+		return 0;
+	}
+	else if(ticks > block->height)
+	{
+		ticks %= block->height;
+	}
+	
 	// 0101 1010 1101 0100
 	// 1101 0100 0101 1010
 	// 0101 1010 1101 0100
@@ -29,10 +38,10 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 			Byte byte = getByte(block, col, i);
 			setByte(byte, block, col, i+ticks);
 		}
-		// wrapped bits
+		// wrap bytes
 		for(int i=ticks - 1, j = block->height - 1; i >=0; i--, j--)
 		{
-			Byte byte = getByte(block, col, j);
+			Byte byte = tempCol[j];
 			setByte(byte, block, col, i);
 		}
 	}
@@ -44,7 +53,7 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 	// 1101 0100 0101 1010
 	// 1101 0100 0101 1010
 	
-	// shift up XXX (unfinished)
+	// shift up (untested)
 	else if(dir == SHIFT_UP)
 	{
 		for(int i=ticks; i < block->height - 1; i++)
@@ -52,10 +61,10 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 			Byte byte = getByte(block, col, i);
 			setByte(byte, block, col, i-ticks);
 		}
-		// wrapped bits
-		for(int i=ticks - 1, j = block->height - 1; i >=0; i--, j--)
+		// wrap bytes
+		for(int i=block->height - ticks, j=0; i < block->height - 1; i++, j++)
 		{
-			Byte byte = getByte(block, col, j);
+			Byte byte = tempCol[j];
 			setByte(byte, block, col, i);
 		}
 	}

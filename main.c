@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
  * 	1. += one byte from the key (increments & wraps back to beginning)
  * 	2. XOR with 0xe7
  * 	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
+ * 	4. separate bytes into blocks, padd shift around the rows and columns
 */
 
 int encryptData(Byte *data, int size, char *key)
