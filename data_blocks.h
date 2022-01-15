@@ -1,6 +1,10 @@
 #ifndef DATA_BLOCKS_H
 #define DATA_BLOCKS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "main.h"
 
 struct DataBlock
@@ -22,5 +26,9 @@ enum ShiftDir {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
  * @param dir whether to shift the column up or down (0 = down, 1 = up)
 **/
 int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

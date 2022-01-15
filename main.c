@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 	
 	if(option == ENCRYPT)
 	{
-		encryptData(&data, password);
+		// encryptData(&data, password);
 		
 		file = fopen(fileName, "w");
 		if(!file)
@@ -111,12 +111,12 @@ int main(int argc, char *argv[])
 		fwrite(data.ptr, data.size, 1, file);
 		fclose(file);
 		
-		printf("Encrypted file: %zu bytes int", data.size);
+		printf("Encrypted file: %d bytes int", data.size);
 		return 0;
 	}
 	else if(option == DECRYPT)
 	{
-		decryptData(&data, password);
+		// decryptData(&data, password);
 		
 		file = fopen(fileName, "w");
 		if(!file)
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 		fwrite(data.ptr, data.size, 1, file);
 		fclose(file);
 		
-		printf("Decrypted data %zu bytes int", data.size);
+		printf("Decrypted data %d bytes int", data.size);
 		return 0;
 	}
 	else {
