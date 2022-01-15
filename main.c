@@ -1,21 +1,20 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "main.h"
-#include "data_blocks.h"
+#include "encrypt.h"
+#include "file.h"
 
 int main(int argc, char *argv[])
 {
 	char *fileName = NULL;
 	char *password = NULL;
 	enum Options option = 0;
-	
 	FILE *file;
-	Byte *data;
-	int size;
+	struct Data data = {.ptr = NULL, .size = 0};
 	int i;
 	
+	// parse args
 	if(strcmp(argv[1], "Help") == 0 || strcmp(argv[i], "h") == 0 || strcmp(argv[i], "H") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-H") == 0 || strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-Help")== 0 )
 	{
 		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
@@ -95,19 +94,12 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	// get the size
-	fseek(file, 0L, SEEK_END);
-	size = ftell(file);
-	fseek(file, 0L, SEEK_SET);
-	
-	data = malloc(size);
-	
-	fread(data, size, 1, file);
+	data.size = getFileSize(file);
 	fclose(file);
 	
 	if(option == ENCRYPT)
 	{
-		encryptData(data, size, password);
+		encryptData(&data, password);
 		
 		file = fopen(fileName, "w");
 		if(!file)
@@ -116,15 +108,15 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 		fseek(file, 0L, SEEK_SET);
-		fwrite(data, size, 1, file);
+		fwrite(data.ptr, data.size, 1, file);
 		fclose(file);
 		
-		printf("Encrypted file: %d bytes long", size);
+		printf("Encrypted file: %zu bytes int", data.size);
 		return 0;
 	}
 	else if(option == DECRYPT)
 	{
-		decryptData(data, size, password);
+		decryptData(&data, password);
 		
 		file = fopen(fileName, "w");
 		if(!file)
@@ -133,10 +125,10 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 		fseek(file, 0L, SEEK_SET);
-		fwrite(data, size, 1, file);
+		fwrite(data.ptr, data.size, 1, file);
 		fclose(file);
 		
-		printf("Decrypted data %d bytes long", size);
+		printf("Decrypted data %zu bytes int", data.size);
 		return 0;
 	}
 	else {
@@ -145,69 +137,4 @@ int main(int argc, char *argv[])
 	}
 	
 	return 0;
-}
-
-/**
- * Steps:
- * looping through every data byte... 
- * 1	1. += one byte from the key (increments & wraps back to beginning)
- * 1	2. XOR with 0xe7
- * 1	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
- * 0	4. separate bytes into blocks, padd shift around the rows and columns
-*/
-
-int encryptData(Byte *data, int size, char *key)
-{
-	int keyLen = strlen(key);
-	int keyCursor = 0;
-	Byte temp = '\0';
-	struct DataBlock *block;
-	int numBlocks;
-	int blockWidth = 10, blockHeight = 10; // should be derived from key
-	
-	for(int i=0; i<size; i++)
-	{
-		data[i] += key[keyCursor++];
-		if(keyCursor > keyLen - 1) {keyCursor = 0;}
-		
-		data[i] ^= 0xe7;
-		
-		temp = data[i];
-		data[i] <<= 2;
-		data[i] += (temp >> 6);
-	}
-	
-	numBlocks = size / (blockWidth * blockHeight) + 1;
-	block = malloc(numBlocks * sizeof(struct DataBlock));
-	
-	return 1;
-}
-
-/** does the opposite of the encryption (obv)
- * looping through every data byte...
- * 	1. shift bits right 2 notches, wrap the two bits pushed off to the left side of the byte
- * 	2. XOR with 0xe7
- * 	3. -= one byte from the key (increments & wraps around back to beginning)
-**/
-
-int decryptData(Byte *data, int size, char *key)
-{
-	int keyLen = strlen(key);
-	int keyCursor = 0;
-	Byte temp = '\0';
-	
-	for(int i=0; i<size; i++)
-	{
-		// 0000 0011
-		temp = data[i];
-		data[i] >>= 2;
-		data[i] += (temp << 6);
-		
-		data[i] ^= 0xe7;
-		
-		data[i] -= key[keyCursor++];
-		if(keyCursor > keyLen - 1) {keyCursor = 0;}
-	}
-	
-	return 1;
 }

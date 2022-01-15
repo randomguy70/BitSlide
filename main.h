@@ -2,9 +2,11 @@
 #define MAIN_H
 
 typedef unsigned char Byte;
-enum Options {ENCRYPT = 1, DECRYPT};
 
-int encryptData(Byte *data, int size, char *key);
-int decryptData(Byte *data, int size, char *key);
+struct Data
+{
+	Byte *ptr;
+	int size;
+};
 
 #endif
