@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
 	char *fileName = NULL;
 	char *password = NULL;
 	enum Options option = 0;
-	FILE *file;
-	struct Data data = {.ptr = NULL, .size = 0};
+	FILE *file = NULL;
+	struct Data data; // = {.ptr = NULL, .size = 0};
 	int i;
 	
 	// parse args

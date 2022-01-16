@@ -1,7 +1,44 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "data_blocks.h"
 #include "main.h"
+
+struct DataBlock *dataToBlocks(struct Data *data)
+{
+	struct DataBlock *block1, *block;
+	const int width = 15, height = 10;             // should be derived from key or hash
+	int i = 0, j = 0;
+	Byte *ptr = data->ptr;
+	
+	block1 = malloc(sizeof(struct DataBlock));
+	block = block1;
+	
+	while(1)
+	{
+		block->data = ptr;
+		block->width = width;
+		block->height = height;
+		
+		// if the block has extra space left
+		if(ptr + block->width * block->height - 1 > data->ptr + data->size - 1)
+		{
+			int j = 0;
+			while(ptr <= data->ptr + data->size - 1)
+			{
+				block->data[j++] = *ptr++;
+			}
+			while(ptr < block->data + block->width * block->height - 1)
+			{
+				block->data[j++] = *ptr++;
+			}
+			
+			break;
+		}
+	}
+	
+	return block1;
+}
 
 int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
 {
