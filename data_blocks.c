@@ -23,18 +23,34 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		// if the block has extra space left
 		if(ptr + block->width * block->height - 1 > data->ptr + data->size - 1)
 		{
-			int j = 0;
+			j = 0;
 			while(ptr <= data->ptr + data->size - 1)
 			{
 				block->data[j++] = *ptr++;
 			}
-			while(ptr < block->data + block->width * block->height - 1)
+			while(j <= block->width * block->height - 1)
 			{
-				block->data[j++] = *ptr++;
+				block->data[j++] = 0;
 			}
 			
-			break;
+			// store data size at the end of the last block
+			int *tempPtr = (int*)block->data + block->width * block->height - 1 - sizeof(int);
+			*tempPtr = data->size;
+			
+			// show that it's the last block
+			block->next = NULL;
+			
+			return block1;
 		}
+		
+		// copy data into block
+		for(i=0; i <= block->width * block->height - 1; i++)
+		{
+			block->data[i] = *ptr++;
+		}
+		
+		block->next = malloc(sizeof(struct DataBlock));
+		block = block->next;
 	}
 	
 	return block1;
