@@ -27,7 +27,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size at the end of it
 			if(bytesCopied + block->width * block->height - sizeof(int) < data->size)
 			{
-				const char temp[sizeof(int)] = {'\0'};
+				Byte temp[sizeof(int)] = {'\0'};
 				const int padNum = bytesCopied + block->width * block->height - data->size; // number of bytes to wipe at the end of the block
 				
 				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
@@ -89,8 +89,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 struct Data *blocksToData(struct DataBlock *first)
 {
 	struct DataBlock *block = first, *temp;
-	Byte *data = NULL;
-	int size = 0;
+	struct Data *data = malloc(sizeof(struct Data));
 	int bytesCopied = 0;
 	int *tempPtr = NULL;
 	int numBlocks = 1;
@@ -102,20 +101,20 @@ struct Data *blocksToData(struct DataBlock *first)
 		numBlocks++;
 	}
 	tempPtr = (int*)(block->data + block->height * block->width - 1 - sizeof(int));
-	size = *tempPtr;
+	data->size = *tempPtr;
 	
-	data = malloc(size);
+	data->ptr = malloc(data->size);
 	block = first;
 	
 	for(int i=1; i <= numBlocks; i++)
 	{
 		if(i < numBlocks)
 		{
-			copyBytes(data + bytesCopied, block->data, block->width * block->height);
+			copyBytes(data->ptr + bytesCopied, block->data, block->width * block->height);
 		}
 		else if(i == numBlocks)
 		{
-			copyBytes(data + bytesCopied, block->data, size - bytesCopied);
+			copyBytes(data->ptr + bytesCopied, block->data, data->size - bytesCopied);
 			
 			freeBlocks(first);
 			return data;
@@ -230,4 +229,5 @@ Byte getByte(struct DataBlock *block, int col, int row)
 Byte setByte(Byte value, struct DataBlock *block, int col, int row)
 {
 	block->data[col + row*block->width] = value;
+	return value;
 }

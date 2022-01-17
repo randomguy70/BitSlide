@@ -1,2 +1,3 @@
 # simple_txt_encrypter
 ## I will be adding many more operations for added security...
+## Right now I compile it with gcc *.c because I can't get the [makefile](https://github.com/randomguy70/simple_txt_encrypter/blob/main/makefile) working
