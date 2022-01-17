@@ -15,6 +15,13 @@ int main(int argc, char *argv[])
 	struct Data data;
 	int i;
 	
+	if(argc < 2)
+	{
+		printf("No input file or args given\n");
+		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		return 0;
+	}
+	
 	// parse args
 	if(strcmp(argv[1], "Help") == 0 || strcmp(argv[i], "h") == 0 || strcmp(argv[i], "H") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-H") == 0 || strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-Help")== 0 )
 	{
