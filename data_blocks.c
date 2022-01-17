@@ -58,39 +58,52 @@ struct DataBlock *dataToBlocks(struct Data *data)
 
 struct Data *blocksToData(struct DataBlock *first)
 {
-	struct DataBlock *block = first;
+	struct DataBlock *block = first, *temp;
 	Byte *data = NULL;
 	int size = 0;
 	int bytesCopied = 0;
 	int *tempPtr = NULL;
+	int numBlocks = 1;
 	
+	//  get data size (stored at end of last block)
 	while(block->next != NULL)
 	{
 		block = block->next;
+		numBlocks++;
 	}
-	tempPtr = block->data + block->height * block->width - 1 - sizeof(int);
+	tempPtr = (int*)(block->data + block->height * block->width - 1 - sizeof(int));
 	size = *tempPtr;
 	
 	data = malloc(size);
 	block = first;
 	
-	while(bytesCopied < size)
+	for(int i=1; i <= numBlocks; i++)
 	{
-		for(int i=0; i < block->width * block->height - 1 && bytesCopied < size; i++, bytesCopied++)
+		if(i < numBlocks)
 		{
-			data[bytesCopied] = block->data[i];
+			copyBytes(data + bytesCopied, block->data, block->width * block->height);
 		}
-		if(block->next != NULL)
+		else if(i == numBlocks)
 		{
-			block = block->next;
-		}
-		else
-		{
+			copyBytes(data + bytesCopied, block->data, size - bytesCopied);
+			
 			return data;
 		}
 	}
 	
 	return data;
+}
+
+int copyBytes(Byte *dest, Byte *src, int len)
+{
+	int i;
+	
+	for(i=0; i<len; i++)
+	{
+		dest[i] = src[i];
+	}
+	
+	return i;
 }
 
 int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)

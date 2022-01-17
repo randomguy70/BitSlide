@@ -15,6 +15,7 @@ struct DataBlock
 };
 
 struct DataBlock *dataToBlocks(struct Data *data);
+int copyBytes(Byte *dest, Byte *src, int len);
 Byte getByte(struct DataBlock *block, int col, int row);
 Byte setByte(Byte value, struct DataBlock *block, int col, int row);
 

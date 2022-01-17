@@ -11,7 +11,7 @@
  * 1	1. += one byte from the key (increments & wraps back to beginning)
  * 1	2. XOR with 0xe7
  * 1	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte
- * 0	4. separate bytes into blocks, padd 0's to the end of the block, store the actual data's size in the last 3 bytes, shift around the rows and columns
+ * 0	4. separate bytes into blocks, shift around the rows and columns
 */
 // XXX
 struct Data encryptData(struct Data *data, char *key)
@@ -21,6 +21,8 @@ struct Data encryptData(struct Data *data, char *key)
 	int keyCursor = 0;
 	Byte temp;
 	struct DataBlock *block;
+	
+	
 	
 	for(int i=0; i<data->size; i++)
 	{
