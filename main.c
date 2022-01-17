@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "main.h"
@@ -8,10 +9,10 @@
 int main(int argc, char *argv[])
 {
 	char *fileName = NULL;
-	char *password = NULL;
+	char *password = NULL;    // might turn this into a Data struct
 	enum Options option = 0;
-	FILE *file = NULL;
-	struct Data data; // = {.ptr = NULL, .size = 0};
+	FILE *file;
+	struct Data data;
 	int i;
 	
 	// parse args
@@ -88,50 +89,68 @@ int main(int argc, char *argv[])
 	}
 	
 	file = fopen(fileName, "r");
-	if(!file)
+	
+	if(file)
+	{
+		data.size = getFileSize(file);
+		data.ptr = malloc(data.size);
+		fclose(file);
+	}
+	else
 	{
 		printf("File %s not found\n", fileName);
 		return 0;
 	}
 	
-	data.size = getFileSize(file);
-	fclose(file);
-	
+	// encrypting
 	if(option == ENCRYPT)
 	{
 		// encryptData(&data, password);
 		
 		file = fopen(fileName, "w");
-		if(!file)
-		{
-			printf("Original file not found");
-			return 0;
-		}
-		fseek(file, 0L, SEEK_SET);
-		fwrite(data.ptr, data.size, 1, file);
-		fclose(file);
 		
-		printf("Encrypted file: %d bytes int", data.size);
+		if(file)
+		{
+			fseek(file, 0L, SEEK_SET);
+			fwrite(data.ptr, data.size, 1, file);
+			fclose(file);
+			
+			printf("Encrypted data %d bytes\nWrote to file %s", data.size, fileName);
+		}
+		else
+		{
+			printf("Not able to write to overwrite file %s", fileName);
+		}
+		
 		return 0;
 	}
+	
+	// decrypting
 	else if(option == DECRYPT)
 	{
 		// decryptData(&data, password);
 		
 		file = fopen(fileName, "w");
-		if(!file)
+		
+		if(file)
+		{
+			fseek(file, 0L, SEEK_SET);
+			fwrite(data.ptr, data.size, 1, file);
+			fclose(file);
+			
+			printf("Decrypted data %d bytes\nWrote to file %s", data.size, fileName);
+		}
+		else
 		{
 			printf("Original file not found");
-			return 0;
 		}
-		fseek(file, 0L, SEEK_SET);
-		fwrite(data.ptr, data.size, 1, file);
-		fclose(file);
 		
-		printf("Decrypted data %d bytes int", data.size);
 		return 0;
 	}
-	else {
+	
+	// if option is not valid (it never will get to this statement, but just in case)
+	else
+	{
 	 	printf("Horrible disaster. Exiting...");
 	 	return 0;
 	}
