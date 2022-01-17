@@ -9,7 +9,6 @@ struct DataBlock *dataToBlocks(struct Data *data)
 {
 	struct DataBlock *block1, *block;
 	const int width = 15, height = 10;             // will be derived from key in future
-	int i = 0, j = 0;
 	int bytesCopied = 0;
 	
 	block1 = malloc(sizeof(struct DataBlock));
@@ -26,7 +25,6 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		{
 			// if the 4 bytes to store the size don't fit at the end, then copy the rest of the data into the block,
 			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size at the end of it
-			
 			if(bytesCopied + block->width * block->height - sizeof(int) < data->size)
 			{
 				const char temp[sizeof(int)] = {'\0'};
@@ -53,23 +51,35 @@ struct DataBlock *dataToBlocks(struct Data *data)
 				
 				return block1;
 			}
+			
 			else
 			{
+				const int padNum = bytesCopied + block->width * block->height - data->size; // number of empty bytes at the end of the block
 				
+				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
+				for(int i = block->width * block->height - 1 - padNum; i <= block->width * block->height - 1; i++)
+				{
+					block->data[i] = '\0';
+				}
+				
+				// store the size
+				int *tempPtr = (int*)(block->data + block->width * block->height - 1 - sizeof(int));
+				*tempPtr = data->size;
+				
+				block->next = NULL;
+				
+				return block1;
 			}
-			
-			// store data size at the end of the last block
-			int *tempPtr = (int*)block->data + block->width * block->height - 1 - sizeof(int);
-			*tempPtr = data->size;
-			
-			// show that it's the last block
-			block->next = NULL;
-			
-			return block1;
 		}
 		
-		block->next = malloc(sizeof(struct DataBlock));
-		block = block->next;
+		else
+		{
+			copyBytes(block->data, data->ptr + bytesCopied, block->width*block->height);
+			bytesCopied += block->width*block->height;
+			
+			block->next = malloc(sizeof(struct DataBlock));
+			block = block->next;
+		}
 	}
 	
 	return block1;
