@@ -4,7 +4,7 @@
 #include "data_blocks.h"
 #include "main.h"
 
-// XXX pretty inefficient so far
+// copies any given data into a linked list of data blocks and returns a pointer to the first block
 struct DataBlock *dataToBlocks(struct Data *data)
 {
 	struct DataBlock *block1, *block;
@@ -85,6 +85,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	return block1;
 }
 
+// copies the data from a given linked list of data blocks into a Data struct, and returns a pointer to the struct
 struct Data *blocksToData(struct DataBlock *first)
 {
 	struct DataBlock *block = first, *temp;
@@ -116,10 +117,12 @@ struct Data *blocksToData(struct DataBlock *first)
 		{
 			copyBytes(data + bytesCopied, block->data, size - bytesCopied);
 			
+			freeBlocks(first);
 			return data;
 		}
 	}
 	
+	freeBlocks(first);
 	return data;
 }
 
