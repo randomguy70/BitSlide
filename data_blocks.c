@@ -4,7 +4,7 @@
 #include "data_blocks.h"
 #include "main.h"
 
-// XXX
+// XXX pretty inefficient so far
 struct DataBlock *dataToBlocks(struct Data *data)
 {
 	struct DataBlock *block1, *block;
@@ -21,16 +21,37 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		block->height = height;                     // should be derived from key
 		block->data   = malloc(block->width * block->height);
 		
-		// if it is the last block necessary
+		// if the rest of the data will fit in this block
 		if(bytesCopied + block->width * block->height >= data->size)
 		{
 			// if the 4 bytes to store the size don't fit at the end, then copy the rest of the data into the block,
-			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size into the end of the last block
+			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size at the end of it
+			
 			if(bytesCopied + block->width * block->height - sizeof(int) < data->size)
 			{
 				const char temp[sizeof(int)] = {'\0'};
-				const int paddOffset = 
+				const int padNum = bytesCopied + block->width * block->height - data->size; // number of bytes to wipe at the end of the block
+				
 				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
+				copyBytes(block->data + (block->width * block->height - 1) - padNum, temp, padNum);
+				
+				block->next = malloc(sizeof(struct DataBlock));
+				block = block->next;
+				
+				block->next = NULL;
+				block->width = width;
+				block->height = height;
+				block->data = malloc(block->width * block->height);
+				int i;
+				for(i=0; i<block->width * block->height - 1 - sizeof(int); i++)
+				{
+					block->data[i] = '\0';
+				}
+				// store data size
+				int *tempPtr = (int*)(block->data + i);
+				*tempPtr = data->size;
+				
+				return block1;
 			}
 			else
 			{
@@ -45,12 +66,6 @@ struct DataBlock *dataToBlocks(struct Data *data)
 			block->next = NULL;
 			
 			return block1;
-		}
-		
-		// copy data into block
-		for(i=0; i <= block->width * block->height - 1; i++)
-		{
-			block->data[i] = *ptr++;
 		}
 		
 		block->next = malloc(sizeof(struct DataBlock));
