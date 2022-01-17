@@ -4,33 +4,37 @@
 #include "data_blocks.h"
 #include "main.h"
 
+// XXX
 struct DataBlock *dataToBlocks(struct Data *data)
 {
 	struct DataBlock *block1, *block;
-	const int width = 15, height = 10;             // should be derived from key or hash
+	const int width = 15, height = 10;             // will be derived from key in future
 	int i = 0, j = 0;
-	Byte *ptr = data->ptr;
+	int bytesCopied = 0;
 	
 	block1 = malloc(sizeof(struct DataBlock));
 	block = block1;
 	
-	while(1)
+	while(bytesCopied < data->size)
 	{
-		block->data = ptr;
-		block->width = width;
-		block->height = height;
+		block->width  = width;                      // should be derived from key
+		block->height = height;                     // should be derived from key
+		block->data   = malloc(block->width * block->height);
 		
-		// if the block has extra space left
-		if(ptr + block->width * block->height - 1 > data->ptr + data->size - 1)
+		// if it is the last block necessary
+		if(bytesCopied + block->width * block->height >= data->size)
 		{
-			j = 0;
-			while(ptr <= data->ptr + data->size - 1)
+			// if the 4 bytes to store the size don't fit at the end, then copy the rest of the data into the block,
+			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size into the end of the last block
+			if(bytesCopied + block->width * block->height - sizeof(int) < data->size)
 			{
-				block->data[j++] = *ptr++;
+				const char temp[sizeof(int)] = {'\0'};
+				const int paddOffset = 
+				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
 			}
-			while(j <= block->width * block->height - 1)
+			else
 			{
-				block->data[j++] = 0;
+				
 			}
 			
 			// store data size at the end of the last block
@@ -94,6 +98,22 @@ struct Data *blocksToData(struct DataBlock *first)
 	return data;
 }
 
+int freeBlocks(struct DataBlock *first)
+{
+	int i = 1;
+	struct DataBlock *temp;
+	
+	while(first->next != NULL)
+	{
+		temp = first->next;
+		free(first);
+		first = temp;
+		i++;
+	}
+	
+	return i;
+}
+
 int copyBytes(Byte *dest, Byte *src, int len)
 {
 	int i;
@@ -106,7 +126,7 @@ int copyBytes(Byte *dest, Byte *src, int len)
 	return i;
 }
 
-int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)
+int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 {
 	Byte *tempCol = malloc(block->height);
 	
