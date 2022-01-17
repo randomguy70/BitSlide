@@ -59,9 +59,10 @@ struct DataBlock *dataToBlocks(struct Data *data)
 struct Data *blocksToData(struct DataBlock *first)
 {
 	struct DataBlock *block = first;
-	Byte *data;
-	int size, bytesCopied = 0;
-	int *tempPtr;
+	Byte *data = NULL;
+	int size = 0;
+	int bytesCopied = 0;
+	int *tempPtr = NULL;
 	
 	while(block->next != NULL)
 	{
@@ -73,15 +74,23 @@ struct Data *blocksToData(struct DataBlock *first)
 	data = malloc(size);
 	block = first;
 	
-	while(bytesCopied <= size)
+	while(bytesCopied < size)
 	{
-		if(bytesCopied + block->height * block->width > size)
+		for(int i=0; i < block->width * block->height - 1 && bytesCopied < size; i++, bytesCopied++)
 		{
-			
+			data[bytesCopied] = block->data[i];
 		}
-		
-		
+		if(block->next != NULL)
+		{
+			block = block->next;
+		}
+		else
+		{
+			return data;
+		}
 	}
+	
+	return data;
 }
 
 int shiftCol(struct DataBlock *block, int col, int ticks, enum ShiftDir dir)

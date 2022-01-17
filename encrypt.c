@@ -16,11 +16,11 @@
 // XXX
 struct Data encryptData(struct Data *data, char *key)
 {
+	struct Data ret;
 	int keyLen = strlen(key);
 	int keyCursor = 0;
-	Byte temp = '\0';
-	struct DataBlock *block1;
-	int numBlocks;
+	Byte temp;
+	struct DataBlock *block;
 	
 	for(int i=0; i<data->size; i++)
 	{
@@ -33,33 +33,6 @@ struct Data encryptData(struct Data *data, char *key)
 		data->ptr[i] <<= 2;
 		data->ptr[i] += (temp >> 6);
 	}
-	
-	// numBlocks = size / (block->width * block->height) + 1;
-	// block = malloc(numBlocks * sizeof(struct DataBlock));
-	block = malloc(sizeof (struct DataBlock));
-	block->width = 10;
-	block->height = 10;
-	block->data = malloc(block->width * block->height);
-	
-	int i;
-	
-	for(i=0; i<data->size; i++)
-	{
-		setByte(data->ptr[i], block, i%block->width, i/block->height);
-	}
-	
-	// padding
-	for(i=i; i<block->width * block->height - sizeof(int); i++)
-	{
-		setByte('\0', block, i%block->width, i/block->height);
-	}
-	int *sizeLoc = (int*)block->data + block->width * block->height - 1 - sizeof(int);
-	*sizeLoc = data->size;
-	
-	// scramble data
-	// shiftCol(block, 0, 1, SHIFT_UP);
-	
-	struct Data ret = {.ptr = block->data, .size = block->width * block->height};
 	
 	return ret;
 }
