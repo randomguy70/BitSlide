@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
 	enum Options option = 0;
 	FILE *file;
 	struct Data *data = malloc(sizeof(struct Data));
-	int i = 0;
 	
+	// no args passed
 	if(argc < 2)
 	{
 		printf("No input file or args given\n");
@@ -22,14 +22,29 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	// parse args
-	if(strcmp(argv[1], "Help") == 0 || strcmp(argv[1], "h") == 0 || strcmp(argv[1], "H") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "-Help")== 0 )
+	// help arg(s)
 	{
-		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
-		return 0;
+		char *args[] = {"Help", "-Help", "help", "-help", "H", "-H", "h", "-h", "Syntax", "-Syntax", "syntax", "-syntax", "assistance", "ayuda", "please"};
+		int help = 0;
+		
+		for(int i=0; i < sizeof(args); i++)
+		{
+			if(strcmp(argv[i], args[i]) == 0)
+			{
+				help = 1;
+				break;
+			}
+		}
+		
+		if(help == 1)
+		{
+			printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+			printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
+			return 0;
+		}
 	}
 	
-	for(i=1; i<argc; i++)
+	for(int i=1; i<argc; i++)
 	{
 		if(strcmp(argv[i], "-i") == 0)
 		{
@@ -69,7 +84,7 @@ int main(int argc, char *argv[])
 		}
 		else if(strcmp(argv[i], "-o") == 0)
 		{
-			if(i + 1 > argc)
+			if(i >= argc)
 			{
 				printf("You didn't specify whether to encrypt or decrypt the file\n");
 				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
@@ -78,7 +93,7 @@ int main(int argc, char *argv[])
 			if(strcmp(argv[i+1], "encrypt") == 0)
 			{
 				option = ENCRYPT;
-				i += 2;
+				i++;
 				if(i >= argc)
 				{
 					break;
@@ -87,7 +102,7 @@ int main(int argc, char *argv[])
 			else if(strcmp(argv[i+1], "decrypt") == 0)
 			{
 				option = DECRYPT;
-				i += 2;
+				i++;
 				if(i >= argc)
 				{
 					break;
