@@ -14,27 +14,30 @@
  * 0	4. separate bytes into blocks, shift around the rows and columns
 */
 // XXX
-struct Data encryptData(struct Data *data, char *key)
+struct Data *encryptData(struct Data *data, char *key)
 {
-	struct Data ret;
+	struct Data *ret;
 	int keyLen = strlen(key);
 	int keyCursor = 0;
 	Byte temp;
-	struct DataBlock *block;
+	struct DataBlock *block1;
 	
 	
 	
-	for(int i=0; i<data->size; i++)
-	{
-		data->ptr[i] += key[keyCursor++];
-		if(keyCursor > keyLen - 1) {keyCursor = 0;}
-		
-		data->ptr[i] ^= 0xe7;
-		
-		temp = data->ptr[i];
-		data->ptr[i] <<= 2;
-		data->ptr[i] += (temp >> 6);
-	}
+	// for(int i=0; i<data->size; i++)
+	// {
+		// data->ptr[i] += key[keyCursor++];
+		// if(keyCursor > keyLen - 1) {keyCursor = 0;}
+		// 
+		// data->ptr[i] ^= 0xe7;
+		// 
+		// temp = data->ptr[i];
+		// data->ptr[i] <<= 2;
+		// data->ptr[i] += (temp >> 6);
+	// }
+	
+	block1 = dataToBlocks(data);
+	ret = blocksToData(block1);
 	
 	return ret;
 }
@@ -46,12 +49,15 @@ struct Data encryptData(struct Data *data, char *key)
  * 	3. -= one byte from the key (increments & wraps around back to beginning)
 **/
 
-struct Data decryptData(struct Data *data, char *key)
+struct Data *decryptData(struct Data *data, char *key)
 {
-	struct Data ret = {.ptr = NULL, .size = 0};
+	struct Data *ret = malloc(sizeof(struct Data));
 	int keyLen = strlen(key);
 	int keyCursor = 0;
 	Byte temp = '\0';
+	
+	ret->ptr = NULL;
+	ret->size = 0;
 	
 	for(int i=0; i<data->size; i++)
 	{

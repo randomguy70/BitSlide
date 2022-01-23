@@ -9,8 +9,8 @@ extern "C" {
 
 enum Options {ENCRYPT = 1, DECRYPT};
 
-struct Data encryptData(struct Data *data, char *key);
-struct Data decryptData(struct Data *data, char *key);
+struct Data *encryptData(struct Data *data, char *key);
+struct Data *decryptData(struct Data *data, char *key);
 
 #ifdef __cplusplus
 }

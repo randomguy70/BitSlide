@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 	char *password = NULL;    // might turn this into a Data struct
 	enum Options option = 0;
 	FILE *file;
-	struct Data data;
-	int i;
+	struct Data *data = malloc(sizeof(struct Data));
+	int i = 0;
 	
 	if(argc < 2)
 	{
@@ -23,9 +23,10 @@ int main(int argc, char *argv[])
 	}
 	
 	// parse args
-	if(strcmp(argv[1], "Help") == 0 || strcmp(argv[i], "h") == 0 || strcmp(argv[i], "H") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-H") == 0 || strcmp(argv[i], "-help") == 0 || strcmp(argv[i], "-Help")== 0 )
+	if(strcmp(argv[1], "Help") == 0 || strcmp(argv[1], "h") == 0 || strcmp(argv[1], "H") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-help") == 0 || strcmp(argv[1], "-Help")== 0 )
 	{
 		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		return 0;
 	}
 	
 	for(i=1; i<argc; i++)
@@ -38,10 +39,17 @@ int main(int argc, char *argv[])
 				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
 				return 0;
 			}
-			
-			fileName = argv[i + 1];
+			else
+			{
+				fileName = argv[i + 1];
+				i += 2;
+				if(i >= argc)
+				{
+					break;
+				}
+			}
 		}
-		if(strcmp(argv[i], "-p") == 0)
+		else if(strcmp(argv[i], "-p") == 0)
 		{
 			if(i + 1 > argc)
 			{
@@ -49,10 +57,17 @@ int main(int argc, char *argv[])
 				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
 				return 0;
 			}
-			
-			password = argv[i + 1];
+			else
+			{
+				password = argv[i + 1];
+				i += 2;
+				if(i >= argc)
+				{
+					break;
+				}
+			}
 		}
-		if(strcmp(argv[i], "-o") == 0)
+		else if(strcmp(argv[i], "-o") == 0)
 		{
 			if(i + 1 > argc)
 			{
@@ -63,10 +78,20 @@ int main(int argc, char *argv[])
 			if(strcmp(argv[i+1], "encrypt") == 0)
 			{
 				option = ENCRYPT;
+				i += 2;
+				if(i >= argc)
+				{
+					break;
+				}
 			}
 			else if(strcmp(argv[i+1], "decrypt") == 0)
 			{
 				option = DECRYPT;
+				i += 2;
+				if(i >= argc)
+				{
+					break;
+				}
 			}
 			else
 			{
@@ -99,8 +124,8 @@ int main(int argc, char *argv[])
 	
 	if(file)
 	{
-		data.size = getFileSize(file);
-		data.ptr = malloc(data.size);
+		data->size = getFileSize(file);
+		data->ptr = malloc(data->size);
 		fclose(file);
 	}
 	else
@@ -112,17 +137,19 @@ int main(int argc, char *argv[])
 	// encrypting
 	if(option == ENCRYPT)
 	{
-		// encryptData(&data, password);
+		// data = encryptData(data, password);
+		data->ptr = NULL;
+		data->size = 0;
 		
 		file = fopen(fileName, "w");
 		
 		if(file)
 		{
 			fseek(file, 0L, SEEK_SET);
-			fwrite(data.ptr, data.size, 1, file);
+			fwrite(data->ptr, data->size, 1, file);
 			fclose(file);
 			
-			printf("Encrypted data %d bytes\nWrote to file %s", data.size, fileName);
+			printf("Encrypted data %d bytes\nWrote to file %s", data->size, fileName);
 		}
 		else
 		{
@@ -142,10 +169,10 @@ int main(int argc, char *argv[])
 		if(file)
 		{
 			fseek(file, 0L, SEEK_SET);
-			fwrite(data.ptr, data.size, 1, file);
+			fwrite(data->ptr, data->size, 1, file);
 			fclose(file);
 			
-			printf("Decrypted data %d bytes\nWrote to file %s", data.size, fileName);
+			printf("Decrypted data %d bytes\nWrote to file %s", data->size, fileName);
 		}
 		else
 		{
