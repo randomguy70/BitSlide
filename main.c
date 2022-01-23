@@ -6,6 +6,8 @@
 #include "encrypt.h"
 #include "file.h"
 
+void argHelp(void);
+
 int main(int argc, char *argv[])
 {
 	char *fileName = NULL;
@@ -18,40 +20,34 @@ int main(int argc, char *argv[])
 	if(argc < 2)
 	{
 		printf("No input file or args given\n");
-		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		argHelp();
 		return 0;
 	}
 	
 	// help arg(s)
 	{
-		char *args[] = {"Help", "-Help", "help", "-help", "H", "-H", "h", "-h", "Syntax", "-Syntax", "syntax", "-syntax", "assistance", "ayuda", "please"};
-		int help = 0;
+		char *variations[] = {"Help", "-Help", "help", "-help", "H", "-H", "h", "-h", "Syntax", "-Syntax", "syntax", "-syntax", "assistance", "ayuda", "please"};
+		const int numVariations = sizeof(variations) / sizeof(char*);
 		
-		for(int i=0; i < sizeof(args); i++)
+		for(int i=0; i < numVariations - 1; i++)
 		{
-			if(strcmp(argv[i], args[i]) == 0)
+			if(strcmp(argv[i], variations[i]) == 0)
 			{
-				help = 1;
-				break;
+				argHelp();
+				printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
+				return 0;
 			}
-		}
-		
-		if(help == 1)
-		{
-			printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
-			printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
-			return 0;
 		}
 	}
 	
-	for(int i=1; i<argc; i++)
+	for(int i=1; i<argc; i=i)
 	{
 		if(strcmp(argv[i], "-i") == 0)
 		{
 			if(i + 1 > argc)
 			{
 				printf("No File inputted\n");
-				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+				argHelp();
 				return 0;
 			}
 			else
@@ -69,7 +65,7 @@ int main(int argc, char *argv[])
 			if(i + 1 > argc)
 			{
 				printf("No password inputted\n");
-				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+				argHelp();
 				return 0;
 			}
 			else
@@ -87,7 +83,7 @@ int main(int argc, char *argv[])
 			if(i >= argc)
 			{
 				printf("You didn't specify whether to encrypt or decrypt the file\n");
-				printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+				argHelp();
 				return 0;
 			}
 			if(strcmp(argv[i+1], "encrypt") == 0)
@@ -114,24 +110,30 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 		}
+		else
+		{
+			printf("%s is not a valid argument\n", argv[i]);
+			argHelp();
+			return 0;
+		}
 	}
 	
 	if(fileName == NULL)
 	{
 		printf("No file inputted\n");
-		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		argHelp();
 		return 0;
 	}
 	if(password == NULL)
 	{
 		printf("No password inputted\n");
-		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		argHelp();
 		return 0;
 	}
 	if(option == 0)
 	{
 		printf("You didn't specify whether to encrypt or decrypt the file\n");
-		printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+		argHelp();
 		return 0;
 	}
 	
@@ -205,4 +207,10 @@ int main(int argc, char *argv[])
 	}
 	
 	return 0;
+}
+
+void argHelp(void)
+{
+	printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+	printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
 }
