@@ -7,12 +7,22 @@
 // copies any given data into a linked list of data blocks and returns a pointer to the first block
 struct DataBlock *dataToBlocks(struct Data *data)
 {
-	struct DataBlock *block1, *block;
-	const int width = 15, height = 10;             // will be derived from key in future
+	struct DataBlock *ret, *block;
+	const int width = 12, height = 10;
+	const int blockSize = width * height;
+	const int numBlocks = (data->size + 3) % blockSize ? (data->size + 3) / blockSize : (data->size + 3) / blockSize + 1;
 	int bytesCopied = 0;
 	
-	block1 = malloc(sizeof(struct DataBlock));
-	block = block1;
+	ret = malloc(sizeof(struct DataBlock));
+	block = ret;
+	
+	for(int i=2; i < numBlocks; i++)
+	{
+		block->width  = width;
+		block->height = height;
+		block->data = NULL;
+		block->next = malloc(sizeof(struct DataBlock));
+	}
 	
 	while(bytesCopied < data->size)
 	{
@@ -49,7 +59,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 				int *tempPtr = (int*)(block->data + i);
 				*tempPtr = data->size;
 				
-				return block1;
+				return ret;
 			}
 			
 			else
@@ -82,7 +92,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		}
 	}
 	
-	return block1;
+	return ret;
 }
 
 // copies the data from a given linked list of data blocks into a Data struct, and returns a pointer to the struct

@@ -1,8 +1,9 @@
+#include "encrypt.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "main.h"
-#include "encrypt.h"
 #include "data_blocks.h"
 
 /**
@@ -22,8 +23,6 @@ struct Data *encryptData(struct Data *data, char *key)
 	Byte temp;
 	struct DataBlock *block1;
 	
-	
-	
 	// for(int i=0; i<data->size; i++)
 	// {
 		// data->ptr[i] += key[keyCursor++];
@@ -35,6 +34,8 @@ struct Data *encryptData(struct Data *data, char *key)
 		// data->ptr[i] <<= 2;
 		// data->ptr[i] += (temp >> 6);
 	// }
+	
+	printf("Data:\n%s", data->ptr);
 	
 	block1 = dataToBlocks(data);
 	ret = blocksToData(block1);

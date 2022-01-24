@@ -156,9 +156,7 @@ int main(int argc, char *argv[])
 	// encrypting
 	if(option == ENCRYPT)
 	{
-		// data = encryptData(data, password);
-		data->ptr = NULL;
-		data->size = 0;
+		data = encryptData(data, password);
 		
 		file = fopen(fileName, "w");
 		
