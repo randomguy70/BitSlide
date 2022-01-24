@@ -16,12 +16,21 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	ret = malloc(sizeof(struct DataBlock));
 	block = ret;
 	
-	for(int i=2; i < numBlocks; i++)
+	for(int i=1; i <= numBlocks; i++)
 	{
 		block->width  = width;
 		block->height = height;
-		block->data = NULL;
-		block->next = malloc(sizeof(struct DataBlock));
+		block->data = block->width * block->height;
+		
+		if(i ==  numBlocks)
+		{
+			block->next = NULL;
+		}
+		else
+		{
+			block->next = malloc(sizeof(struct DataBlock));
+			block = block->next;
+		}
 	}
 	
 	while(bytesCopied < data->size)
