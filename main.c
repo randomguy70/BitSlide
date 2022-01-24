@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	// no args passed
 	if(argc < 2)
 	{
-		printf("No input file or args given\n");
+		printf("No args given\n");
 		argHelp();
 		return 0;
 	}
@@ -27,11 +27,12 @@ int main(int argc, char *argv[])
 	// help arg(s)
 	{
 		char *variations[] = {"Help", "-Help", "help", "-help", "H", "-H", "h", "-h", "Syntax", "-Syntax", "syntax", "-syntax", "assistance", "ayuda", "please"};
-		const int numVariations = sizeof(variations) / sizeof(char*);
+		// const int numVariations = sizeof(variations) / sizeof(char*);
+		int numVariations = 15;
 		
 		for(int i=0; i < numVariations - 1; i++)
 		{
-			if(strcmp(argv[i], variations[i]) == 0)
+			if(strcmp(argv[1], variations[i]) == 0)
 			{
 				argHelp();
 				printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
@@ -80,13 +81,14 @@ int main(int argc, char *argv[])
 		}
 		else if(strcmp(argv[i], "-o") == 0)
 		{
+			i++;
 			if(i >= argc)
 			{
 				printf("You didn't specify whether to encrypt or decrypt the file\n");
 				argHelp();
 				return 0;
 			}
-			if(strcmp(argv[i+1], "encrypt") == 0)
+			if(strcmp(argv[i], "encrypt") == 0)
 			{
 				option = ENCRYPT;
 				i++;
@@ -95,7 +97,7 @@ int main(int argc, char *argv[])
 					break;
 				}
 			}
-			else if(strcmp(argv[i+1], "decrypt") == 0)
+			else if(strcmp(argv[i], "decrypt") == 0)
 			{
 				option = DECRYPT;
 				i++;
@@ -106,7 +108,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				printf("%s is not a valid option", argv[i + 1]);
+				printf("%s is not a valid option", argv[i]);
 				return 0;
 			}
 		}
