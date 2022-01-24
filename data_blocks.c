@@ -16,6 +16,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	ret = malloc(sizeof(struct DataBlock));
 	block = ret;
 	
+	// initialise blocks
 	for(int i=1; i <= numBlocks; i++)
 	{
 		block->width  = width;
@@ -33,6 +34,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		}
 	}
 	
+	// this is going to be rewritten tomorrow
 	while(bytesCopied < data->size)
 	{
 		block->width  = width;                      // should be derived from key
