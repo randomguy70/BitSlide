@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data_blocks.h"
-#include "main.h"
+#include "../include/data_blocks.h"
+#include "../include/main.h"
 
 // copies any given data into a linked list of data blocks and returns a pointer to the first block
 struct DataBlock *dataToBlocks(struct Data *data)

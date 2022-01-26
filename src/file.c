@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "file.h"
+#include "../include/file.h"
 
 int getFileSize(FILE *file)
 {

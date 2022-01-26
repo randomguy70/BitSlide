@@ -1,10 +1,10 @@
-#include "encrypt.h"
+#include "../include/encrypt.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "main.h"
-#include "data_blocks.h"
+#include "../include/main.h"
+#include "../include/data_blocks.h"
 
 /**
  * Steps:

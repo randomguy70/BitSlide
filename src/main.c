@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "main.h"
-#include "encrypt.h"
-#include "file.h"
+#include "../include/main.h"
+#include "../include/file.h"
+#include "../include/encrypt.h"
 
 void argHelp(void);
 
