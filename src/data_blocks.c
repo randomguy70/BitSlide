@@ -9,8 +9,13 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	struct DataBlock *block1, *block;
 	const int width = 12, height = 10; // width should be a multiple of sizeof(int), and height should be given as a parameter
 	const int blockSize = width * height;
-	const int numBlocks = (data->size + sizeof(int)) % blockSize ? (data->size + sizeof(int)) / blockSize : (data->size + sizeof(int)) / blockSize + 1;
 	int bytesCopied = 0;
+	int numBlocks = (data->size + sizeof(int)) / blockSize;
+	
+	if((data->size + sizeof(int)) % blockSize)
+	{
+		numBlocks++;
+	}
 	
 	block1 = malloc(sizeof(struct DataBlock));
 	block = block1;

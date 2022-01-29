@@ -1,5 +1,6 @@
 #include "../include/encrypt.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,9 +19,9 @@
 struct Data *encryptData(struct Data *data, char *key)
 {
 	struct Data *ret;
-	int keyLen = strlen(key);
-	int keyCursor = 0;
-	Byte temp;
+	// int keyLen = strlen(key);
+	// int keyCursor = 0;
+	// Byte temp;
 	struct DataBlock *block1;
 	
 	// for(int i=0; i<data->size; i++)
@@ -35,10 +36,15 @@ struct Data *encryptData(struct Data *data, char *key)
 		// data->ptr[i] += (temp >> 6);
 	// }
 	
-	printf("Data:\n%s", data->ptr);
-	
+	printf("\ndata to blocks\n");
 	block1 = dataToBlocks(data);
+	
+	printf("\nblocks to data\n");
 	ret = blocksToData(block1);
+	
+	ret = malloc(sizeof(struct Data));
+	ret->ptr = NULL;
+	ret->size = 0;
 	
 	return ret;
 }

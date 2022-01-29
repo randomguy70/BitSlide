@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-	for(int i=1; i<argc; i=i)
+	for(int i=1; i<argc;)
 	{
 		if(strcmp(argv[i], "-i") == 0)
 		{
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 	if(option == ENCRYPT)
 	{
 		data = encryptData(data, password);
-		
+		return 0;
 		file = fopen(fileName, "w");
 		
 		if(file)
@@ -211,6 +211,6 @@ int main(int argc, char *argv[])
 
 void argHelp(void)
 {
-	printf("Argument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n");
+	printf("\nArgument Syntax:\n -i <input>\n -p <password>\n -o <option> (encrypt or decrypt)\n\n");
 	printf("Email me at onlychessfreeze0515@gmail.com for additional help, if you found a bug, or if you have suggestions / constructive criticism\n");
 }
