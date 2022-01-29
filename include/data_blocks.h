@@ -16,7 +16,10 @@ struct DataBlock
 
 enum DIRECTION {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
 
+// copies any given data into a linked list of data blocks and returns a pointer to the first block
 struct DataBlock *dataToBlocks(struct Data *data);
+
+// copies the data from a given linked list of data blocks into a Data struct, and returns a pointer to the struct
 struct Data *blocksToData(struct DataBlock *first);
 
 int freeBlocks(struct DataBlock *first);

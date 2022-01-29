@@ -4,24 +4,24 @@
 #include "../include/data_blocks.h"
 #include "../include/main.h"
 
-// copies any given data into a linked list of data blocks and returns a pointer to the first block
 struct DataBlock *dataToBlocks(struct Data *data)
 {
-	struct DataBlock *ret, *block;
-	const int width = 12, height = 10;
+	struct DataBlock *block1, *block;
+	const int width = 12, height = 10; // width should be a multiple of sizeof(int), and height should be given as a parameter
 	const int blockSize = width * height;
-	const int numBlocks = (data->size + 3) % blockSize ? (data->size + 3) / blockSize : (data->size + 3) / blockSize + 1;
+	const int numBlocks = (data->size + sizeof(int)) % blockSize ? (data->size + sizeof(int)) / blockSize : (data->size + sizeof(int)) / blockSize + 1;
 	int bytesCopied = 0;
 	
-	ret = malloc(sizeof(struct DataBlock));
-	block = ret;
+	block1 = malloc(sizeof(struct DataBlock));
+	block = block1;
 	
-	// initialise blocks
+	// initialise block properties
+	
 	for(int i=1; i <= numBlocks; i++)
 	{
 		block->width  = width;
 		block->height = height;
-		block->data = block->width * block->height;
+		block->data = malloc(blockSize);
 		
 		if(i ==  numBlocks)
 		{
@@ -34,82 +34,32 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		}
 	}
 	
-	// this is going to be rewritten tomorrow
-	while(bytesCopied < data->size)
+	// copy data into blocks
+	
+	block = block1;
+	
+	for(int i = 0; i < numBlocks - 1; i++)
 	{
-		block->width  = width;                      // should be derived from key
-		block->height = height;                     // should be derived from key
-		block->data   = malloc(block->width * block->height);
-		
-		// if the rest of the data will fit in this block
-		if(bytesCopied + block->width * block->height >= data->size)
+		if(block->next == NULL)
 		{
-			// if the 4 bytes to store the size don't fit at the end, then copy the rest of the data into the block,
-			// pad 0's into the end of the block, create a new block, fill it with 0's, and store the size at the end of it
-			if(bytesCopied + block->width * block->height - sizeof(int) < data->size)
-			{
-				Byte temp[sizeof(int)] = {'\0'};
-				const int padNum = bytesCopied + block->width * block->height - data->size; // number of bytes to wipe at the end of the block
-				
-				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
-				copyBytes(block->data + (block->width * block->height - 1) - padNum, temp, padNum);
-				
-				block->next = malloc(sizeof(struct DataBlock));
-				block = block->next;
-				
-				block->next = NULL;
-				block->width = width;
-				block->height = height;
-				block->data = malloc(block->width * block->height);
-				int i;
-				for(i=0; i<block->width * block->height - 1 - sizeof(int); i++)
-				{
-					block->data[i] = '\0';
-				}
-				// store data size
-				int *tempPtr = (int*)(block->data + i);
-				*tempPtr = data->size;
-				
-				return ret;
-			}
-			
-			else
-			{
-				const int padNum = bytesCopied + block->width * block->height - data->size; // number of empty bytes at the end of the block
-				
-				copyBytes(block->data, data->ptr + bytesCopied, data->size - bytesCopied);
-				for(int i = block->width * block->height - 1 - padNum; i <= block->width * block->height - 1; i++)
-				{
-					block->data[i] = '\0';
-				}
-				
-				// store the size
-				int *tempPtr = (int*)(block->data + block->width * block->height - 1 - sizeof(int));
-				*tempPtr = data->size;
-				
-				block->next = NULL;
-				
-				return block1;
-			}
+			break;
 		}
-		
-		else
-		{
-			copyBytes(block->data, data->ptr + bytesCopied, block->width*block->height);
-			bytesCopied += block->width*block->height;
-			
-			block->next = malloc(sizeof(struct DataBlock));
-			block = block->next;
-		}
+		copyBytes(block->data, data->ptr + bytesCopied, blockSize);
+		bytesCopied += blockSize;
+		block = block->next;
 	}
 	
-	return ret;
+	// copy data size into last 4 bytes of last block
+	
+	copyBytes(block->data, data->ptr+((numBlocks-1) * blockSize), blockSize - sizeof(int));
+	*((int *)(data->ptr+(numBlocks * blockSize) - sizeof(int))) = data->size;
+	
+	return block1;
 }
 
-// copies the data from a given linked list of data blocks into a Data struct, and returns a pointer to the struct
 struct Data *blocksToData(struct DataBlock *first)
 {
-	struct DataBlock *block = first, *temp;
+	struct DataBlock *block = first;
 	struct Data *data = malloc(sizeof(struct Data));
 	int bytesCopied = 0;
 	int *tempPtr = NULL;
@@ -121,6 +71,7 @@ struct Data *blocksToData(struct DataBlock *first)
 		block = block->next;
 		numBlocks++;
 	}
+	
 	tempPtr = (int*)(block->data + block->height * block->width - 1 - sizeof(int));
 	data->size = *tempPtr;
 	
