@@ -22,6 +22,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	
 	// initialise block properties
 	
+	printf("initialising blocks\n");
 	for(int i=1; i <= numBlocks; i++)
 	{
 		block->width  = width;
@@ -41,6 +42,8 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	
 	// copy data into blocks
 	
+	printf("copying data into blocks\n");
+	
 	block = block1;
 	
 	for(int i = 0; i < numBlocks - 1; i++)
@@ -56,6 +59,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	
 	// copy data size into last 4 bytes of last block
 	
+	printf("storing size\n");
 	copyBytes(block->data, data->ptr+((numBlocks-1) * blockSize), blockSize - sizeof(int));
 	*((int *)(data->ptr+(numBlocks * blockSize) - sizeof(int))) = data->size;
 	
@@ -77,11 +81,14 @@ struct Data *blocksToData(struct DataBlock *first)
 		block = block->next;
 		numBlocks++;
 	}
+	printf("counted %d blocks\n", numBlocks);
 	
 	data->size = *((int*)(block->data + blockSize - sizeof(int)));
 	data->ptr = malloc(data->size);
 	
 	// copy the data from every block except the last
+	
+	printf("copying blocks into data struct\n");
 	
 	block = first;
 	
@@ -93,6 +100,8 @@ struct Data *blocksToData(struct DataBlock *first)
 	}
 	
 	// copy the data from the last block (minus the last 4 bytes)
+	
+	printf("copying last block\n");
 	
 	copyBytes(data->ptr + bytesCopied, block->data, blockSize - sizeof(int));
 	
