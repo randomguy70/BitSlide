@@ -61,39 +61,38 @@ struct Data *blocksToData(struct DataBlock *first)
 {
 	struct DataBlock *block = first;
 	struct Data *data = malloc(sizeof(struct Data));
+	const int blockSize = first->width * first->height;
 	int bytesCopied = 0;
-	int *tempPtr = NULL;
 	int numBlocks = 1;
 	
-	//  get data size (stored at end of last block)
+	// get data size (stored in the last 4 bytes of the last block)
+	
 	while(block->next != NULL)
 	{
 		block = block->next;
 		numBlocks++;
 	}
 	
-	tempPtr = (int*)(block->data + block->height * block->width - 1 - sizeof(int));
-	data->size = *tempPtr;
-	
+	data->size = *((int*)(block->data + blockSize - sizeof(int)));
 	data->ptr = malloc(data->size);
+	
+	// copy the data from every block except the last
+	
 	block = first;
 	
-	for(int i=1; i <= numBlocks; i++)
+	for(int i = 0; i < numBlocks - 1; i++)
 	{
-		if(i < numBlocks)
-		{
-			copyBytes(data->ptr + bytesCopied, block->data, block->width * block->height);
-		}
-		else if(i == numBlocks)
-		{
-			copyBytes(data->ptr + bytesCopied, block->data, data->size - bytesCopied);
-			
-			freeBlocks(first);
-			return data;
-		}
+		copyBytes(data->ptr + bytesCopied, block->data, blockSize);
+		bytesCopied += blockSize;
+		block = block->next;
 	}
 	
+	// copy the data from the last block (minus the last 4 bytes)
+	
+	copyBytes(data->ptr + bytesCopied, block->data, blockSize - sizeof(int));
+	
 	freeBlocks(first);
+	
 	return data;
 }
 
