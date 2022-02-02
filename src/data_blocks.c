@@ -68,14 +68,17 @@ struct DataBlock *dataToBlocks(struct Data *data)
 
 struct Data *blocksToData(struct DataBlock *first)
 {
+	printf("Begin blocks to data function\n");
+	
 	struct DataBlock *block = first;
-	struct Data *data = malloc(sizeof(struct Data));
+	struct Data *data = malloc(sizeof(struct Data));	
 	const int blockSize = first->width * first->height;
 	int bytesCopied = 0;
 	int numBlocks = 1;
 	
 	// get data size (stored in the last 4 bytes of the last block)
 	
+	printf("counting blocks\n");
 	while(block->next != NULL)
 	{
 		block = block->next;
