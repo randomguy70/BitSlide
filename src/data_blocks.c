@@ -82,8 +82,6 @@ struct DataBlock *dataToBlocks(struct Data *data)
 
 struct Data *blocksToData(struct DataBlock *first)
 {
-	printf("Begin blocks to data function\n");
-	
 	struct DataBlock *block = first;
 	struct Data *data = malloc(sizeof(struct Data));	
 	const int blockSize = first->width * first->height;
@@ -92,7 +90,6 @@ struct Data *blocksToData(struct DataBlock *first)
 	
 	// get data size (stored in the last 4 bytes of the last block)
 	
-	printf("counting blocks\n");
 	while(block->next != NULL)
 	{
 		block = block->next;
@@ -232,4 +229,38 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row)
 {
 	block->data[col + row*block->width] = value;
 	return value;
+}
+
+void printBlocks(struct DataBlock *first)
+{
+	char *string = malloc(first->width + 1);
+	int numBlocks = 0;
+	
+	string[first->width] = '\0';
+	
+	while(1)
+	{
+		printf("Block %d", numBlocks);
+		
+		for(int i = 0; i < first->height; i++)
+		{
+			for(int ii = 0; ii < first->width; ii++)
+			{
+				string[i] = (char) getByte(first, ii, i);
+			}
+			
+			printf("%s\n", string + 1);
+		}
+		
+		if(first->next == NULL)
+		{
+			return;
+		}
+		else
+		{
+			first = first->next;
+		}
+		
+		numBlocks++;
+	}
 }

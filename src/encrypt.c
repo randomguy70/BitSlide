@@ -37,19 +37,16 @@ struct Data *encryptData(struct Data *data, char *key)
 	// }
 	
 	printf("\ndata to blocks\n");
+	
 	block1 = dataToBlocks(data);
 	
 	printf("block1 -- width: %d, height: %d, size: %d, data: %p next ptr: %p\n", block1->width, block1->height, block1->width * block1->height, (void*) block1->data, (void*) block1->next);
 	
-	printf("\nblocks to data\n");
+	printBlocks(block1);
 	
 	ret = blocksToData(block1);
 	
-	printf("converted blocks to data");
-	
-	ret = malloc(sizeof(struct Data));
-	ret->ptr = NULL;
-	ret->size = 0;
+	printf("converted blocks to data\n");
 	
 	return ret;
 }

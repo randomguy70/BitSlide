@@ -30,7 +30,7 @@ struct Data *blocksToData(struct DataBlock *first);
 
 /** 
  * Frees a given linked list of data blocks from memory
- * @param first a pointer to the first element in the list
+ * @param first a pointer to the first element in the linked list
 **/
 int freeBlocks(struct DataBlock *first);
 
@@ -46,6 +46,12 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row);
  * @param dir whether to shift the column up or down (0 = down, 1 = up)
 **/
 int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir);
+
+/**
+ * Prints the data stored in a linked list of dataBlocks with respect to rows and columns
+ * @param first a pointer to the first element in the linked list
+**/
+void printBlocks(struct DataBlock *first);
 
 #ifdef __cplusplus
 }
