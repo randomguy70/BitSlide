@@ -42,6 +42,7 @@ struct Data *encryptData(struct Data *data, char *key)
 	printf("block1 -- width: %d, height: %d, size: %d, data: %p next ptr: %p\n", block1->width, block1->height, block1->width * block1->height, (void*) block1->data, (void*) block1->next);
 	
 	printf("\nblocks to data\n");
+	
 	ret = blocksToData(block1);
 	
 	printf("converted blocks to data");

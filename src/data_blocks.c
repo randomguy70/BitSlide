@@ -17,6 +17,8 @@ struct DataBlock *dataToBlocks(struct Data *data)
 		numBlocks++;
 	}
 	
+	printf("numBlocks: %d\n", numBlocks);
+	
 	block1 = malloc(sizeof(struct DataBlock));
 	block = block1;
 	
@@ -25,13 +27,14 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	printf("initialising blocks\n");
 	for(int i=1; i <= numBlocks; i++)
 	{
-		block->width  = width;
+		block->width = width;
 		block->height = height;
 		block->data = malloc(blockSize);
 		
-		if(i ==  numBlocks)
+		if(i == numBlocks)
 		{
 			block->next = NULL;
+			break;
 		}
 		else
 		{
@@ -46,14 +49,25 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	
 	block = block1;
 	
-	for(int i = 0; i < numBlocks - 1; i++)
+	for(int i = 1; i < numBlocks; i++)
 	{
-		if(block->next == NULL)
+		int len = blockSize;
+		if(blockSize > data->size - bytesCopied)
 		{
-			break;
+			len = data->size - bytesCopied;
+			copyBytes(block->data, data->ptr + bytesCopied, len);
+			bytesCopied += len;
+			for(Byte *j = block->data + len; j < block->data + blockSize - 1 - sizeof(int); j++)
+			{
+				*j = 0;
+			}
 		}
-		copyBytes(block->data, data->ptr + bytesCopied, blockSize);
-		bytesCopied += blockSize;
+		else
+		{
+			copyBytes(block->data, data->ptr + bytesCopied, blockSize);
+			bytesCopied += blockSize;
+		}
+		
 		block = block->next;
 	}
 	
