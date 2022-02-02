@@ -11,6 +11,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	const int blockSize = width * height;
 	int bytesCopied = 0;
 	int numBlocks = (data->size + sizeof(int)) / blockSize;
+	int *sizePtr;
 	
 	if((data->size + sizeof(int)) % blockSize)
 	{
@@ -57,6 +58,9 @@ struct DataBlock *dataToBlocks(struct Data *data)
 			len = data->size - bytesCopied;
 			copyBytes(block->data, data->ptr + bytesCopied, len);
 			bytesCopied += len;
+			
+			// fill rest of block with 0's
+			
 			for(Byte *j = block->data + len; j < block->data + blockSize - 1 - sizeof(int); j++)
 			{
 				*j = 0;
@@ -74,8 +78,8 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	// copy data size into last 4 bytes of last block
 	
 	printf("storing size\n");
-	copyBytes(block->data, data->ptr+((numBlocks-1) * blockSize), blockSize - sizeof(int));
-	*((int *)(data->ptr+(numBlocks * blockSize) - sizeof(int))) = data->size;
+	sizePtr = (int*) block->data + blockSize - 1 - sizeof(int);
+	*sizePtr = data->size;
 	
 	return block1;
 }
@@ -87,6 +91,7 @@ struct Data *blocksToData(struct DataBlock *first)
 	const int blockSize = first->width * first->height;
 	int bytesCopied = 0;
 	int numBlocks = 1;
+	int *sizePtr;
 	
 	// get data size (stored in the last 4 bytes of the last block)
 	
@@ -96,9 +101,11 @@ struct Data *blocksToData(struct DataBlock *first)
 		numBlocks++;
 	}
 	printf("counted %d blocks\n", numBlocks);
-	
-	data->size = *((int*)(block->data + blockSize - sizeof(int)));
+	sizePtr = (int*) block->data + blockSize - 1 - sizeof(int);
+	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
+	
+	printf("data size: %d\n", data->size);
 	
 	// copy the data from every block except the last
 	
