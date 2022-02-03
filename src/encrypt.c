@@ -29,8 +29,6 @@ struct Data *encryptData(struct Data *data, char *key)
 	
 	block1 = dataToBlocks(data);
 	
-	printf("data: %s\n", data->ptr);
-	
 	printf("block1 -- width: %d, height: %d, size: %d, data: %p next ptr: %p\n", block1->width, block1->height, block1->width * block1->height, (void*) block1->data, (void*) block1->next);
 	
 	printBlocks(block1);

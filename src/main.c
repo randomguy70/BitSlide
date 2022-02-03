@@ -146,8 +146,9 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	data->size = getFileSize(file);
+	data->size = getFileSize(file);	
 	data->ptr = malloc(data->size);
+	fseek(file, 0L, SEEK_SET);
 	fread(data->ptr, data->size, 1, file);
 	fclose(file);
 	
