@@ -140,18 +140,16 @@ int main(int argc, char *argv[])
 	}
 	
 	file = fopen(fileName, "r");
-	
-	if(file)
-	{
-		data->size = getFileSize(file);
-		data->ptr = malloc(data->size);
-		fclose(file);
-	}
-	else
+	if(!file)
 	{
 		printf("File %s not found\n", fileName);
 		return 0;
 	}
+	
+	data->size = getFileSize(file);
+	data->ptr = malloc(data->size);
+	fread(data->ptr, data->size, 1, file);
+	fclose(file);
 	
 	// encrypting
 	if(option == ENCRYPT)

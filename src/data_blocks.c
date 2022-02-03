@@ -52,9 +52,7 @@ struct DataBlock *dataToBlocks(struct Data *data)
 	array = malloc(arraySize);
 	
 	copyBytes(array, data->ptr, data->size);
-	
-	printf("Data before: %s\nData after: %s\n", (char*)data->ptr, (char*) array);
-	
+		
 	// fill the end of the data with 0's
 	
 	for(Byte *i = array + data->size; i < array + arraySize - 1 - sizeof(int); i++)
