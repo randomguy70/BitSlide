@@ -43,7 +43,7 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row);
  * @param block pointer to a data block struct
  * @param col column to shift (0 = far left)
  * @param ticks how many bytes to shift the column by
- * @param dir whether to shift the column up or down (0 = down, 1 = up)
+ * @param dir whether to shift the column up or down
 **/
 int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir);
 
@@ -52,6 +52,13 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir);
  * @param first a pointer to the first element in the linked list
 **/
 void printBlocks(struct DataBlock *first);
+
+// shifts the rows and columns in a given linked list of data blocks
+void scrambleBlockData(struct DataBlock *first, char *key);
+void unscrambleBlockData(struct DataBlock *first, char *key);
+
+// changes the value of each byte in a given linked list of data blocks
+void randomizeBytes(struct DataBlock *first, char *pw);
 
 #ifdef __cplusplus
 }

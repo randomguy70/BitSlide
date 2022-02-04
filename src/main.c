@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "../include/data.h"
 #include "../include/file.h"
@@ -161,13 +162,14 @@ int main(int argc, char *argv[])
 			fwrite(data->ptr, data->size, 1, file);
 			fclose(file);
 
-			printf("Encrypted data %d bytes\nWrote to file %s", data->size, fileName);
+			printf("Encrypted data %d bytes\nWrote to file %s\n", data->size, fileName);
 		}
 		else
 		{
-			printf("Not able to write to overwrite file %s", fileName);
+			printf("Not able to write to overwrite file %s\n", fileName);
 		}
 
+		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
 		return 0;
 	}
 

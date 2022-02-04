@@ -1,7 +1,9 @@
+#include "../include/data_blocks.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "../include/data_blocks.h"
 #include "../include/data.h"
 
 struct DataBlock *dataToBlocks(struct Data *data)
@@ -149,20 +151,12 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 {
 	Byte *tempCol;
 
-	if(col < 0 || col >= block->width)
+	if(col < 0 || col >= block->width || (dir != SHIFT_UP && dir != SHIFT_DOWN))
 	{
 		return 0;
 	}
 
-	if(ticks == block->height)
-	{
-		return 0;
-	}
-
-	else if(ticks > block->height)
-	{
-		ticks %= block->height;
-	}
+	ticks %= block->height;
 
 	tempCol = malloc(block->height - ticks);
 
@@ -232,7 +226,7 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 		}
 	}
 
-	return ticks;
+	return 1;
 }
 
 Byte getByte(struct DataBlock *block, int col, int row)
@@ -279,3 +273,88 @@ void printBlocks(struct DataBlock *first)
 		numBlocks++;
 	}
 }
+
+void scrambleBlockData(struct DataBlock *first, char *key)
+{
+	int keyCursor = 0;
+	const int keyLen = strlen(key);
+	int numBlocks = 1;
+	// const int width = first->width;
+	const int height = first->height;
+	int direction;
+	int ticks;
+	int success;
+
+	const char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
+	const char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
+
+	while(first->next != NULL)
+	{
+		for(int col = 0, row = 0; row < height; col++, row++)
+		{
+			ticks = key[keyCursor] ^ (constants1[row] & constants2[col]);
+			direction = (key[keyCursor] + numBlocks + keyLen) % 2;
+
+			success = shiftCol(first, col, ticks, direction);
+
+			if(!success)
+			{
+				printf("epic failure\n");
+				return;
+			}
+
+			++keyCursor;
+			keyCursor %= keyLen;
+		}
+
+		numBlocks++;
+		first = first->next;
+	}
+}
+
+void unscrambleBlockData(struct DataBlock *first, char *key)
+{
+	int keyCursor = 0;
+	int keyLen = strlen(key);
+	int numBlocks = 1;
+	const int width = first->width;
+	const int height = first->height;
+	int direction;
+	int ticks;
+
+	const char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
+	const char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
+
+	while(first->next != NULL)
+	{
+		for(int col = width - 1; col > -1; col--)
+		{
+			for(int row = height - 1; row > -1; row--)
+			{
+				ticks = key[keyCursor] ^ (constants1[row] & constants2[col]);
+				direction = (key[keyCursor] + numBlocks + keyLen + 1) % 2;
+
+				shiftCol(first, col, ticks, direction);
+
+				++keyCursor;
+				keyCursor %= keyLen;
+			}
+		}
+
+		numBlocks++;
+		first = first->next;
+	}
+}
+/**
+void randomizeBytes(struct DataBlock *first, char *key)
+{
+	int keyCursor = 0;
+	int keyLen = strlen(key);
+	int numBlocks = 1;
+
+	const char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
+	const char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
+
+
+}
+**/
