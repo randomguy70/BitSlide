@@ -130,6 +130,10 @@ int freeBlocks(struct DataBlock *first)
 	int i = 1;
 	struct DataBlock *temp;
 
+	// since the data in all the blocks is actually a single block in memory, the first block's data pointer is technically the pointer to all of the data
+
+	free(first->data);
+
 	while(first->next != NULL)
 	{
 		temp = first->next;
