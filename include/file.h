@@ -8,6 +8,7 @@ extern "C" {
 #include <stdio.h>
 
 int getFileSize(FILE *file);
+struct Data *getFileData(FILE *file);
 
 #ifdef __cplusplus
 }
