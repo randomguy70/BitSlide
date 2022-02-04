@@ -147,7 +147,7 @@ int freeBlocks(struct DataBlock *first)
 
 int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 {
-	Byte *tempCol = malloc(block->height);
+	Byte *tempCol;
 
 	if(ticks == block->height)
 	{
@@ -158,52 +158,68 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 		ticks %= block->height;
 	}
 
-	// 0101 1010 1101 0100
-	// 1101 0100 0101 1010
-	// 0101 1010 1101 0100
-	// 1101 0100 0101 1010
-	// 1101 0100 0101 1010
-	// 1101 0100 0101 1010
+	tempCol = malloc(block->height - ticks);
 
-	// copy the column to preserve the wrapped bytes
-	for(int i=0; i<block->height; i++)
-	{
-		tempCol[i] = getByte(block, col, i);
-	}
+	// 0101 1010   1101 0100   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 0101 1010   1101 0100   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 1101 0100   0101 1010   1101 0100
 
-	// shift down (untested)
 	if(dir == SHIFT_DOWN)
 	{
-		for(int i=block->height - ticks - 1; i >= 0; i-=1)
+		// save the wrapped bytes
+
+		for(int i = block->height - ticks, j = 0; i < block->height; i++, j++)
 		{
-			Byte byte = getByte(block, col, i);
-			setByte(byte, block, col, i+ticks);
+			tempCol[j] = getByte(block, col, i);
 		}
-		// wrap bytes
-		for(int i=ticks - 1, j = block->height - 1; i >=0; i--, j--)
+
+		// copy body
+
+		for(int i = block->height - 1; i > ticks - 1; i--)
 		{
-			Byte byte = tempCol[j];
+			Byte byte = getByte(block, col, i - ticks);
+			setByte(byte, block, col, i);
+		}
+
+		// copy wrapped bytes
+
+		for(int i = 0; i < ticks; i++)
+		{
+			Byte byte = tempCol[i];
 			setByte(byte, block, col, i);
 		}
 	}
 
-	// 0101 1010 1101 0100
-	// 1101 0100 0101 1010
-	// 0101 1010 1101 0100
-	// 1101 0100 0101 1010
-	// 1101 0100 0101 1010
-	// 1101 0100 0101 1010
+	// 0101 1010   1101 0100   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 0101 1010   1101 0100   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 1101 0100   0101 1010   1101 0100
+	// 1101 0100   0101 1010   1101 0100
 
-	// shift up (untested)
 	else if(dir == SHIFT_UP)
 	{
-		for(int i=ticks; i < block->height - 1; i++)
+		// save the wrapped bytes
+
+		for(int i = 0; i < ticks; i++)
 		{
-			Byte byte = getByte(block, col, i);
-			setByte(byte, block, col, i-ticks);
+			tempCol[i] = getByte(block, col, i);
 		}
-		// wrap bytes
-		for(int i=block->height - ticks, j=0; i < block->height - 1; i++, j++)
+
+		// copy body
+
+		for(int i = 0; i < block->height - ticks - 1; i++)
+		{
+			Byte byte = getByte(block, col, i + ticks);
+			setByte(byte, block, col, i);
+		}
+
+		// copy wrapped bytes
+
+		for(int i = block->height - ticks, j = 0; i < block->height - 1; i++, j++)
 		{
 			Byte byte = tempCol[j];
 			setByte(byte, block, col, i);
