@@ -225,7 +225,7 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 
 		// copy wrapped bytes
 
-		for(int i = block->height - ticks, j = 0; i < block->height - 1; i++, j++)
+		for(int i = block->height - ticks, j = 0; i < block->height; i++, j++)
 		{
 			Byte byte = tempCol[j];
 			setByte(byte, block, col, i);
