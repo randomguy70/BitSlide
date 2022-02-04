@@ -28,8 +28,8 @@ struct Data *encryptData(struct Data *data, char *key)
 	// }
 
 	block1 = dataToBlocks(data);
-	shiftCol(block1, 0, 1, SHIFT_UP);
-	shiftCol(block1, 0, 1, SHIFT_DOWN);
+	shiftCol(block1, 0, 2, SHIFT_DOWN);
+	shiftCol(block1, 0, 2, SHIFT_UP);
 
 	ret = blocksToData(block1);
 
