@@ -149,10 +149,16 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 {
 	Byte *tempCol;
 
+	if(col < 0 || col >= block->width)
+	{
+		return 0;
+	}
+
 	if(ticks == block->height)
 	{
 		return 0;
 	}
+
 	else if(ticks > block->height)
 	{
 		ticks %= block->height;
