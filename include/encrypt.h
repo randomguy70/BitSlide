@@ -5,13 +5,13 @@
 extern "C" {
 #endif
 
-#include "main.h"
+#include "../include/data.h"
 
 enum Options {ENCRYPT = 1, DECRYPT};
 
 /** XXX
  * Steps:
- * looping through every data byte... 
+ * looping through every data byte...
  * 1	1. += one byte from the key (increments & wraps back to beginning)
  * 1	2. XOR with 0xe7
  * 1	3. shift bits left 2 notches, wrap the 2 bits pushed off to the right side of the byte

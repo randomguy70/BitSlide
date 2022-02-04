@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef DATA_H
+#define DATA_H
 
 #ifdef __cplusplus
 extern "C" {

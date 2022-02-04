@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/main.h"
+#include "../include/data.h"
 #include "../include/data_blocks.h"
 
 struct Data *encryptData(struct Data *data, char *key)

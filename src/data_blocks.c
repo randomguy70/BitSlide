@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "../include/data_blocks.h"
-#include "../include/main.h"
+#include "../include/data.h"
 
 struct DataBlock *dataToBlocks(struct Data *data)
 {
@@ -140,18 +140,6 @@ int freeBlocks(struct DataBlock *first)
 		free(first);
 		first = temp;
 		i++;
-	}
-
-	return i;
-}
-
-int copyBytes(Byte *dest, Byte *src, int len)
-{
-	int i;
-
-	for(i=0; i<len; i++)
-	{
-		dest[i] = src[i];
 	}
 
 	return i;
