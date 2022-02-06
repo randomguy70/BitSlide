@@ -147,7 +147,7 @@ int freeBlocks(struct DataBlock *first)
 	return i;
 }
 
-int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
+int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum DIRECTION dir)
 {
 	Byte *tempCol;
 
@@ -160,25 +160,18 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 
 	tempCol = malloc(block->height - ticks);
 
-	// 0101 1010   1101 0100   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 0101 1010   1101 0100   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-
 	if(dir == SHIFT_DOWN)
 	{
 		// save the wrapped bytes
 
-		for(int i = block->height - ticks, j = 0; i < block->height; i++, j++)
+		for(unsigned int i = block->height - ticks, j = 0; i < block->height; i++, j++)
 		{
 			tempCol[j] = getByte(block, col, i);
 		}
 
 		// copy body
 
-		for(int i = block->height - 1; i > ticks - 1; i--)
+		for(unsigned int i = block->height - 1; i > ticks - 1; i--)
 		{
 			Byte byte = getByte(block, col, i - ticks);
 			setByte(byte, block, col, i);
@@ -186,32 +179,25 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 
 		// copy wrapped bytes
 
-		for(int i = 0; i < ticks; i++)
+		for(unsigned int i = 0; i < ticks; i++)
 		{
 			Byte byte = tempCol[i];
 			setByte(byte, block, col, i);
 		}
 	}
 
-	// 0101 1010   1101 0100   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 0101 1010   1101 0100   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-	// 1101 0100   0101 1010   1101 0100
-
 	else if(dir == SHIFT_UP)
 	{
 		// save the wrapped bytes
 
-		for(int i = 0; i < ticks; i++)
+		for(unsigned int i = 0; i < ticks; i++)
 		{
 			tempCol[i] = getByte(block, col, i);
 		}
 
 		// copy body
 
-		for(int i = 0; i < block->height - ticks - 1; i++)
+		for(unsigned int i = 0; i < block->height - ticks - 1; i++)
 		{
 			Byte byte = getByte(block, col, i + ticks);
 			setByte(byte, block, col, i);
@@ -219,13 +205,92 @@ int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir)
 
 		// copy wrapped bytes
 
-		for(int i = block->height - ticks, j = 0; i < block->height; i++, j++)
+		for(unsigned int i = block->height - ticks, j = 0; i < block->height; i++, j++)
 		{
 			Byte byte = tempCol[j];
 			setByte(byte, block, col, i);
 		}
 	}
 
+	return 1;
+}
+
+int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum DIRECTION dir)
+{
+	Byte *tempRow;
+	Byte byte;
+	unsigned int i, j;
+
+	if(row < 0 || row >= block->width || (dir != SHIFT_LEFT && dir != SHIFT_RIGHT))
+	{
+		return 0;
+	}
+	
+	ticks %= block->width;
+	
+	tempRow = malloc(block->width - ticks);
+	
+	/**
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	**/
+	if(dir == SHIFT_LEFT)
+	{
+		// save the wrapped bytes
+		
+		for(i = 0; i < ticks; i++)
+		{
+			tempRow[i] = getByte(block, i, row);
+		}
+		
+		// copy body
+		
+		for(i = ticks; i < block->width - 1; i++)
+		{
+			byte = getByte(block, i, row);
+			setByte(byte, block, i - ticks, row);
+		}
+		
+		// copy wrapped bytes
+		
+		for(i = block->width - ticks, j = 0; i < block->width - 1; i++, j++)
+		{
+			byte = tempRow[j];
+			setByte(byte, block, i, row);
+		}
+	}
+	
+	else if(dir == SHIFT_RIGHT)
+	{
+		// save the wrapped bytes
+		
+		for(i = block->width - ticks, j = 0; i < block->width - 1; i++, j++)
+		{
+			tempRow[j] = getByte(block, i, row);
+		}
+		
+		// copy body
+		
+		for(i = block->width - ticks - 1; i >= 0; i--)
+		{
+			byte = getByte(block, i, row);
+			setByte(byte, block, i + ticks, row);
+		}
+		
+		// copy wrapped bytes
+		
+		for(i = 0; i < ticks; i++)
+		{
+			byte = tempRow[i];
+			setByte(byte, block, i, row);
+		}
+	}
+	
 	return 1;
 }
 
@@ -244,16 +309,16 @@ void printBlocks(struct DataBlock *first)
 {
 	char *string = malloc(first->width + 1);
 	int numBlocks = 0;
-
+	
 	string[first->width] = '\0';
-
+	
 	while(1)
 	{
 		printf("Block %d", numBlocks);
-
-		for(int i = 0; i < first->height; i++)
+	
+		for(unsigned int i = 0; i < first->height; i++)
 		{
-			for(int ii = 0; ii < first->width; ii++)
+			for(unsigned int ii = 0; ii < first->width; ii++)
 			{
 				string[i] = (char) getByte(first, ii, i);
 			}
@@ -276,75 +341,92 @@ void printBlocks(struct DataBlock *first)
 
 void scrambleBlockData(struct DataBlock *first, char *key)
 {
-	int keyCursor = 0;
+	printf("\nScrambling data\n");
 	const int keyLen = strlen(key);
-	int numBlocks = 1;
-	// const int width = first->width;
-	const int height = first->height;
-	int direction;
-	int ticks;
-	int success;
+	unsigned int numBlocks = 1;
+	const unsigned int width = first->width;
+	// const unsigned int height = first->height;
+	unsigned int col;
+	unsigned int ticks, direction;
+	unsigned int success;
 
-	const char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
-	const char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
-
-	while(first->next != NULL)
+	static const unsigned char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
+	static const unsigned char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
+	
+	while(1)
 	{
-		for(int col = 0, row = 0; row < height; col++, row++)
+		for(col = 0; col < width; col++)
 		{
-			ticks = key[keyCursor] ^ (constants1[row] & constants2[col]);
-			direction = (key[keyCursor] + numBlocks + keyLen) % 2;
-
+			ticks = key[col] ^ (constants1[col] & constants2[col]);
+			direction = (key[col] + numBlocks + keyLen) % 2;
+			
+			printf("moving %u ticks\n", ticks);
 			success = shiftCol(first, col, ticks, direction);
-
+			
 			if(!success)
 			{
-				printf("epic failure\n");
+				printf("scramble failure\n");
 				return;
 			}
-
-			++keyCursor;
-			keyCursor %= keyLen;
 		}
-
+		
 		numBlocks++;
+
+		if(first->next == NULL)
+		{
+			return;
+		}
 		first = first->next;
 	}
+	
+	return;
 }
 
 void unscrambleBlockData(struct DataBlock *first, char *key)
 {
-	int keyCursor = 0;
-	int keyLen = strlen(key);
-	int numBlocks = 1;
-	const int width = first->width;
-	const int height = first->height;
-	int direction;
-	int ticks;
+	printf("\nUnscrambling data\n");
+	const int keyLen = strlen(key);
+	unsigned int numBlocks = 1;
+	const unsigned int width = first->width;
+	// const unsigned int height = first->height;
+	unsigned int col;
+	unsigned int ticks, direction;
+	unsigned int success;
 
-	const char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
-	const char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
+	const unsigned char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
+	const unsigned char constants2[100] = {64, 85, 111, 128, 152, 161, 176, 183, 194, 209, 213, 225, 232, 235, 241, 250, 2, 4, 12, 16, 18, 24, 28, 34, 41, 44, 46, 49, 51, 54, 64, 67, 71, 72, 78, 79, 83, 87, 89, 92, 95, 96, 102, 103, 105, 106, 111, 117, 119, 119, 121, 124, 125, 129, 131, 134, 136, 137, 139, 141, 141, 145, 150, 151, 152, 153, 158, 160, 163, 164, 165, 167, 170, 171, 173, 174, 176, 179, 180, 182, 185, 185, 188, 189, 190, 191, 193, 195, 196, 196, 197, 201, 202, 203, 205, 206, 208, 211, 211, 215};
 
-	while(first->next != NULL)
+	while(1)
 	{
-		for(int col = width - 1; col > -1; col--)
+		for(col = width - 1; col >= 0; col--)
 		{
-			for(int row = height - 1; row > -1; row--)
+			ticks = key[col] ^ (constants1[col] & constants2[col]);
+			direction = (key[col] + numBlocks + keyLen + 1) % 2;
+
+			printf("moving %u ticks\n", ticks);
+			success = shiftCol(first, col, ticks, direction);
+
+			if(!success)
 			{
-				ticks = key[keyCursor] ^ (constants1[row] & constants2[col]);
-				direction = (key[keyCursor] + numBlocks + keyLen + 1) % 2;
-
-				shiftCol(first, col, ticks, direction);
-
-				++keyCursor;
-				keyCursor %= keyLen;
+				printf("scramble failure\n");
+				return;
 			}
 		}
 
 		numBlocks++;
+		printf("numBlocks %d", numBlocks);
+
+		if(first->next == NULL)
+		{
+			return;
+		}
+		printf("%p", (void*)first->next);
 		first = first->next;
 	}
+
+	return;
 }
+
 /**
 void randomizeBytes(struct DataBlock *first, char *key)
 {

@@ -12,7 +12,7 @@ void argHelp(void);
 int main(int argc, char *argv[])
 {
 	char *fileName = NULL;
-	char *password = NULL;    // might turn this into a Data struct
+	char *password = NULL;
 	enum Options option = 0;
 	FILE *file;
 	struct Data *data = malloc(sizeof(struct Data));
@@ -154,6 +154,12 @@ int main(int argc, char *argv[])
 	if(option == ENCRYPT)
 	{
 		data = encryptData(data, password);
+
+		if(data->size > MAX_DATA_SIZE)
+		{
+			printf("Data size limit exceeded\n");
+			return 0;
+		}
 		file = fopen(fileName, "w");
 
 		if(file)
@@ -178,6 +184,12 @@ int main(int argc, char *argv[])
 	{
 		// decryptData(&data, password);
 
+		if(data->size > MAX_DATA_SIZE)
+		{
+			printf("Data size limit exceeded\n");
+			return 0;
+		}
+		
 		file = fopen(fileName, "w");
 
 		if(file)

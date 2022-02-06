@@ -4,7 +4,7 @@
 #
 
 # define the C compiler to use
-CC = clang
+CC = gcc
 
 # define any compile-time flags
 CFLAGS	:= -Wall -Wextra -g
@@ -22,9 +22,6 @@ SRC		:= src
 
 # define include directory
 INCLUDE	:= include
-
-#define object directory
-OBJDIR=obj
 
 # define lib directory
 LIB		:= lib

@@ -28,11 +28,11 @@ struct Data *encryptData(struct Data *data, char *key)
 	// }
 
 	block1 = dataToBlocks(data);
-	scrambleBlockData(block1, key);
-	// unscrambleBlockData(block1, key);
-
+	printf("converted data to blocks\n");
+	
+	
+	
 	ret = blocksToData(block1);
-
 	printf("converted blocks to data\n");
 
 	return ret;

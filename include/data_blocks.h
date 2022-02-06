@@ -9,7 +9,7 @@ extern "C" {
 
 struct DataBlock
 {
-	int width, height;
+	unsigned int width, height;
 	Byte *data;
 	struct DataBlock *next;
 };
@@ -39,18 +39,24 @@ Byte getByte(struct DataBlock *block, int col, int row);
 Byte setByte(Byte value, struct DataBlock *block, int col, int row);
 
 /**
- * Shifts a column of bytes in a data block up or down a given number of bytes (wraps around)
+ * Shifts a column of bytes in a data block up or down a given number of ticks (wraps around)
  * @param block pointer to a data block struct
- * @param col column to shift (0 = far left)
+ * @param col column to shift (0 indexed)
  * @param ticks how many bytes to shift the column by
- * @param dir whether to shift the column up or down
+ * @param dir whether to shift the column up or down (SHIFT_UP, SHIFT_DOWN)
 **/
-int shiftCol(struct DataBlock *block, int col, int ticks, enum DIRECTION dir);
+int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum DIRECTION dir);
 
 /**
- * Prints the data stored in a linked list of dataBlocks with respect to rows and columns
- * @param first a pointer to the first element in the linked list
+ * Shifts a row of bytes in a data block left or right a given number of ticks (wraps around)
+ * @param block pointer to a data block struct
+ * @param col row to shift (0 indexed)
+ * @param ticks how many bytes to shift the row by
+ * @param dir whether to shift the left or right (SHIFT_LEFT, SHIFT_RIGHT)
 **/
+int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum DIRECTION dir);
+
+// Prints the data stored in a linked list of dataBlocks
 void printBlocks(struct DataBlock *first);
 
 // shifts the rows and columns in a given linked list of data blocks

@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#define MAX_DATA_SIZE 10000000
+
 typedef unsigned char Byte;
 
 struct Data
