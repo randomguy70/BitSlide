@@ -14,6 +14,8 @@ struct Data *encryptData(struct Data *data, char *key)
 	// int keyCursor = 0;
 	// Byte temp;
 	struct DataBlock *block1;
+	
+	key = NULL; // only to prevent the parameter warning
 
 	// for(int i=0; i<data->size; i++)
 	// {
@@ -26,15 +28,26 @@ struct Data *encryptData(struct Data *data, char *key)
 		// data->ptr[i] <<= 2;
 		// data->ptr[i] += (temp >> 6);
 	// }
-
+	
 	block1 = dataToBlocks(data);
 	printf("converted data to blocks\n");
 	
+	printf("shifting left\n");
+	shiftRow(block1, 1, 1, SHIFT_RIGHT);
+	shiftRow(block1, 1, 11, SHIFT_RIGHT);
 	
+	/*
+	success = shiftRow(block1, 1, 1, SHIFT_RIGHT);
+	if(!success)
+	{
+		printf("shifting right failed\n");
+		return 0;
+	}
+	*/
 	
 	ret = blocksToData(block1);
 	printf("converted blocks to data\n");
-
+	
 	return ret;
 }
 

@@ -132,7 +132,7 @@ int freeBlocks(struct DataBlock *first)
 	int i = 1;
 	struct DataBlock *temp;
 
-	// since the data in all the blocks is actually a single block in memory, the first block's data pointer is technically the pointer to all of the data
+	// since the data in all the data blocks is actually one large block in memory, the first block's data pointer is technically the pointer to all of the data
 
 	free(first->data);
 
@@ -216,7 +216,7 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 }
 
 int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum DIRECTION dir)
-{
+{	
 	Byte *tempRow;
 	Byte byte;
 	unsigned int i, j;
@@ -227,21 +227,18 @@ int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum
 	}
 	
 	ticks %= block->width;
+	if(ticks == 0)
+	{
+		return 1;
+	}
 	
-	tempRow = malloc(block->width - ticks);
 	
-	/**
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
-	**/
+	tempRow = malloc(ticks);
+	
 	if(dir == SHIFT_LEFT)
 	{
 		// save the wrapped bytes
+		
 		
 		for(i = 0; i < ticks; i++)
 		{
@@ -265,21 +262,30 @@ int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum
 		}
 	}
 	
-	else if(dir == SHIFT_RIGHT)
+	/**
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	 * 10101 10101    10101 10101    10101 10101    10101 10101    10101 10101    10101 10101
+	**/
+	if(dir == SHIFT_RIGHT)
 	{
 		// save the wrapped bytes
 		
-		for(i = block->width - ticks, j = 0; i < block->width - 1; i++, j++)
+		for(i = block->width - ticks, j = 0; i < block->width; i++, j++)
 		{
 			tempRow[j] = getByte(block, i, row);
 		}
 		
 		// copy body
 		
-		for(i = block->width - ticks - 1; i >= 0; i--)
+		for(i = block->width - 1; i >= ticks; i--)
 		{
-			byte = getByte(block, i, row);
-			setByte(byte, block, i + ticks, row);
+			byte = getByte(block, i - ticks, row);
+			setByte(byte, block, i, row);
 		}
 		
 		// copy wrapped bytes
@@ -291,6 +297,7 @@ int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum
 		}
 	}
 	
+	printf("success, shifted %d ticks in %d direction\n", ticks, dir);
 	return 1;
 }
 
