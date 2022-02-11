@@ -32,19 +32,6 @@ struct Data *encryptData(struct Data *data, char *key)
 	block1 = dataToBlocks(data);
 	printf("converted data to blocks\n");
 	
-	printf("shifting left\n");
-	shiftRow(block1, 1, 1, SHIFT_RIGHT);
-	shiftRow(block1, 1, 11, SHIFT_RIGHT);
-	
-	/*
-	success = shiftRow(block1, 1, 1, SHIFT_RIGHT);
-	if(!success)
-	{
-		printf("shifting right failed\n");
-		return 0;
-	}
-	*/
-	
 	ret = blocksToData(block1);
 	printf("converted blocks to data\n");
 	
