@@ -14,7 +14,7 @@ struct DataBlock
 	struct DataBlock *next;
 };
 
-enum DIRECTION {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
+enum Direction {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
 
 /**
  * Copies any given data into a linked list of data blocks and returns a pointer to the first block
@@ -45,7 +45,7 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row);
  * @param ticks how many bytes to shift the column by
  * @param dir whether to shift the column up or down (SHIFT_UP, SHIFT_DOWN)
 **/
-int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum DIRECTION dir);
+int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum Direction dir);
 
 /**
  * Shifts a row of bytes in a data block left or right a given number of ticks (wraps around)
@@ -54,7 +54,7 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
  * @param ticks how many bytes to shift the row by
  * @param dir whether to shift the left or right (SHIFT_LEFT, SHIFT_RIGHT)
 **/
-int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum DIRECTION dir);
+int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum Direction dir);
 
 // Prints the data stored in a linked list of dataBlocks
 void printBlocks(struct DataBlock *first);

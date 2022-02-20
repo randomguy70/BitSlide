@@ -15,22 +15,11 @@ struct Data *encryptData(struct Data *data, char *key)
 	// Byte temp;
 	struct DataBlock *block1;
 	
-	key = NULL; // only to prevent the parameter warning
-
-	// for(int i=0; i<data->size; i++)
-	// {
-		// data->ptr[i] += key[keyCursor++];
-		// if(keyCursor > keyLen - 1) {keyCursor = 0;}
-		//
-		// data->ptr[i] ^= 0xe7;
-		//
-		// temp = data->ptr[i];
-		// data->ptr[i] <<= 2;
-		// data->ptr[i] += (temp >> 6);
-	// }
-	
 	block1 = dataToBlocks(data);
 	printf("converted data to blocks\n");
+	
+	scrambleBlockData(block1, key);
+	unscrambleBlockData(block1, key);
 	
 	ret = blocksToData(block1);
 	printf("converted blocks to data\n");
