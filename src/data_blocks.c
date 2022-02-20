@@ -346,6 +346,7 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 	unsigned int col, row, colTicks, rowTicks;
 	enum Direction colDirection, rowDirection;
 	unsigned int loopLen, loopTicks;
+	unsigned int a, b, c, d, e, f, g;
 	
 	static const unsigned char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
 	const unsigned int constants1Len = 100;
@@ -363,21 +364,29 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 		keySum += key[i];
 	}
 	
-	loopLen = (keySum + constants1[keySum % constants1Len] + constants2[(keySum * keySum) % constants2Len]) % (constants3[keyLen % constants3Len] * keyLen / 27);
+	loopLen = (keyLen * keySum * constants1[keyLen % constants1Len] * constants2[keySum % constants2Len] * constants3[keyLen % constants3Len]) % ((keyLen * keySum) % 172);
 	loopTicks = 0;
 	
 	// will expand this to go through the whole linked list. just bug-testing right now
 	
 	while(loopTicks < loopLen)
 	{
-		col = loopTicks % first->width;
-		row = (loopTicks * keySum * keyLen) % first->height;
+		a = (key[loopTicks % keyLen]) * keyLen * keySum / (loopTicks % constants1[loopTicks % constants1Len]);
+		b = loopTicks * keySum / constants2[a % constants2Len];
+		c = (key[loopLen % keyLen]) * constants1[keyLen % constants1Len] * constants2[keySum % constants2Len] % constants3[b % constants3Len];
+		d = loopLen % loopTicks * c * a + b;
+		e = (key[loopTicks % keyLen]) * constants3[(constants2[(constants1[(a * b * c * d) % constants1Len]) % constants2Len]) % constants3Len];
+		f = loopTicks * loopLen + (d % a * e);
+		g = (key[loopLen % keyLen]) * (a * b * c) % (d * e * f) * loopTicks * loopLen * constants1[e % constants1Len] / constants2[f % constants2Len] * constants3[(a * c * f) % constants3Len];
 		
-		colTicks = (constants3[row % constants3Len] * constants2[key[loopTicks % keyLen] % constants2Len]) % first->width;
-		rowTicks = (constants3[(constants1[loopTicks % constants1Len]) % constants3Len * keySum / keyLen]) ;
+		col = (a * b) % first->width;
+		row = (col / g * d) % first->height;
 		
-		colDirection = (loopTicks * constants1[loopTicks % constants1Len] * constants2[loopTicks % constants2Len] * constants3[loopTicks % constants3Len]) % 2;
-		rowDirection = key[loopTicks % keyLen] % 2 + 2;
+		colTicks = (b % c) % first->height;
+		rowTicks = (a / b * c / d * e / f * g) % first->width;
+		
+		colDirection = (col * row / d * e / f * g) % 2;
+		rowDirection = (g * d / f) % 2 + 2;
 		
 		// printf("calculated shifting data\ncol:%u\nrow:%u\ncolTicks:%u\nrowTicks:%u\ncolDirection:%u\nrowDirection:%u\n", col, row, colTicks, rowTicks, colDirection, rowDirection);
 		
@@ -402,12 +411,13 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 
 void unscrambleBlockData(struct DataBlock *first, char *key)
 {
-	printf("\nUnscrambling data\n");
+	printf("Unscrambling data\n");
 	
 	unsigned int keyLen, keySum;
 	unsigned int col, row, colTicks, rowTicks;
 	enum Direction colDirection, rowDirection;
 	unsigned int loopLen, loopTicks;
+	unsigned int a, b, c, d, e, f, g;
 	
 	static const unsigned char constants1[100] = {41, 73, 123, 164, 231, 4, 56, 79, 123, 182, 200, 252, 28, 43, 73, 116, 156, 169, 206, 230, 242, 20, 43, 75, 116, 136, 146, 166, 176, 195, 2, 20, 46, 54, 96, 104, 128, 152, 168, 191, 213, 221, 2, 9, 23, 30, 72, 113, 126, 133, 146, 165, 172, 204, 223, 241, 4, 10, 28, 40, 46, 75, 116, 127, 133, 144, 183, 199, 226, 232, 242, 2, 23, 39, 54, 65, 80, 100, 110, 130, 154, 159, 184, 188, 203, 212, 226, 245, 255, 3, 13, 40, 58, 67, 85, 94, 108, 134, 138, 177};
 	const unsigned int constants1Len = 100;
@@ -425,20 +435,36 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		keySum += key[i];
 	}
 	
-	loopLen = (keySum + constants1[keySum % constants1Len] + constants2[(keySum * keySum) % constants2Len]) % (constants3[keyLen % constants3Len] * keyLen / 27);
+	loopLen = (keyLen * keySum * constants1[keyLen % constants1Len] * constants2[keySum % constants2Len] * constants3[keyLen % constants3Len]) % ((keyLen * keySum) % 172);
 	loopTicks = loopLen - 1;
 	
-	// will expand this to go through the whole linked list. just bug-testing right now and trying to get some FREE TIME TO ACTUALLY GET SOME PROGRAMMING DONE
-	
+	// will expand this to go through the whole linked list. just bug-testing right now
+	printf("1\n");
 	while(loopTicks >= 0)
 	{
-		col = loopTicks % first->width;
-		row = (loopTicks * keySum * keyLen) % first->height;
+		// randomized seeds
+		printf("2\n");
+		a = (key[loopTicks % keyLen]) * keyLen * keySum / (loopTicks % constants1[loopTicks % constants1Len]);
+		b = loopTicks * keySum / constants2[a % constants2Len];
+		c = (key[loopLen % keyLen]) * constants1[keyLen % constants1Len] * constants2[keySum % constants2Len] % constants3[b % constants3Len];
+		d = loopLen % loopTicks * c * a + b;
+		e = (key[loopTicks % keyLen]) * constants3[(constants2[(constants1[(a * b * c * d) % constants1Len]) % constants2Len]) % constants3Len];
+		f = loopTicks * loopLen + (d % a * e);
+		g = (key[loopLen % keyLen]) * (a * b * c) % (d * e * f) * loopTicks * loopLen * constants1[e % constants1Len] / constants2[f % constants2Len] * constants3[(a * c * f) % constants3Len];
 		
-		colTicks = (constants3[row % constants3Len] * constants2[key[loopTicks % keyLen] % constants2Len]) % first->width;
-		rowTicks = (constants3[(constants1[loopTicks % constants1Len]) % constants3Len * keySum / keyLen]) ;
+		printf("3\n");
+		col = (a * b) % first->width;
+		row = (g * d) % first->height;
 		
-		colDirection = (loopTicks * constants1[loopTicks % constants1Len] * constants2[loopTicks % constants2Len] * constants3[loopTicks % constants3Len]) % 2;
+		printf("3.1\n");
+		colTicks = (b % c) % first->height;
+		rowTicks = (a / b * c / d * e / f * g) % first->width;
+		
+		printf("3.2\n");
+		colDirection = (col * row / d * e / f * g) % 2;
+		rowDirection = (g * d / f) % 2 + 2;
+		
+		printf("4\n");
 		if(colDirection == SHIFT_UP)
 		{
 			colDirection = SHIFT_DOWN;
@@ -448,7 +474,6 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 			colDirection = SHIFT_UP;
 		}
 		
-		rowDirection = key[loopTicks % keyLen] % 2 + 2;
 		if(rowDirection == SHIFT_LEFT)
 		{
 			colDirection = SHIFT_RIGHT;
@@ -458,6 +483,7 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 			colDirection = SHIFT_LEFT;
 		}
 		
+		printf("5\n");
 		if(!(shiftCol(first, col, colTicks, colDirection)))
 		{
 			printf("shifting data column failure\n");
@@ -471,6 +497,7 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		
 		loopTicks--;
 	}
+	printf("6\n");
 	
 	return;
 }
