@@ -396,18 +396,27 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 		rowTicks = (a * b * c * d * e * f * g) % first->width;
 		
 		printf("4\n");
-		colDirection = ((col ^ row) * (d & e) * ~(f * g)) % 2;
-		rowDirection = (g | (d & f)) % 2 + 2;
+		colDirection = (col ^ row) * (d & e) * ~(f * g);
+		colDirection &= 1;
+		rowDirection = (a & b) * (c ^ d) * (~(e * f));
+		rowDirection &= 1;
 		
-		// shift
-		
-		if(colDirection != SHIFT_UP && colDirection != SHIFT_DOWN)
+		if(colDirection)
 		{
 			colDirection = SHIFT_UP;
 		}
-		if(rowDirection != SHIFT_LEFT && rowDirection != SHIFT_RIGHT)
+		else
+		{
+			colDirection = SHIFT_DOWN;
+		}
+		
+		if(rowDirection)
 		{
 			rowDirection = SHIFT_LEFT;
+		}
+		else
+		{
+			rowDirection = SHIFT_RIGHT;
 		}
 		
 		printf("action:\n");
@@ -491,12 +500,12 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		rowTicks = (a * b * c * d * e * f * g) % first->width;
 		
 		printf("4\n");
-		colDirection = ((col ^ row) * (d & e) * ~(f * g)) % 2;
-		rowDirection = (g | (d & f)) % 2 + 2;
+		colDirection = (col ^ row) * (d & e) * ~(f * g);
+		colDirection &= 1;
+		rowDirection = (a & b) * (c ^ d) * (~(e * f));
+		rowDirection &= 1;
 		
-		// switch the directions to undo the encryption
-		
-		if(colDirection == SHIFT_UP)
+		if(colDirection)
 		{
 			colDirection = SHIFT_DOWN;
 		}
@@ -505,7 +514,7 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 			colDirection = SHIFT_UP;
 		}
 		
-		if(rowDirection == SHIFT_LEFT)
+		if(rowDirection)
 		{
 			rowDirection = SHIFT_RIGHT;
 		}
@@ -515,7 +524,7 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		}
 		
 		printf("action:\n");
-		printf("   col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u", col, row, colTicks, rowTicks, colDirection, rowDirection);
+		printf("   col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u", col, row, colTicks, rowTicks, colDirection, rowDirection - 2);
 		
 		// make sure the shifting works
 		
