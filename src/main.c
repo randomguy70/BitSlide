@@ -139,6 +139,10 @@ int main(int argc, char *argv[])
 		argHelp();
 		return 0;
 	}
+	if(strlen(password) < 8)
+	{
+		printf("WARNING: Your password should be at least 8 characters for maximum security!\n");
+	}
 
 	file = fopen(fileName, "r");
 	if(!file)
@@ -149,6 +153,12 @@ int main(int argc, char *argv[])
 
 	data = getFileData(file);
 	fclose(file);
+	
+	if(data->size <= 0)
+	{
+		printf("File %s is empty\n", fileName);
+		return 0;
+	}
 
 	// encrypting
 	if(option == ENCRYPT)
