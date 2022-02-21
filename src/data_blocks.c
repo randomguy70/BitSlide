@@ -388,9 +388,9 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 		rowTicks = (a * b * c * d * e * f * g) % first->width;
 		
 		printf("4\n");
-		colDirection = (col ^ row) * (d & e) * ~(f * g);
+		colDirection = ~((a ^ b) & (c | d));
 		colDirection &= 1;
-		rowDirection = (a & b) * (c ^ d) * (~(e * f));
+		rowDirection = (((d & e) ^ g) | (g & a));
 		rowDirection &= 1;
 		
 		if(colDirection)
@@ -503,9 +503,9 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		rowTicks = (a * b * c * d * e * f * g) % first->width;
 		
 		printf("4\n");
-		colDirection = (col ^ row) * (d & e) * ~(f * g);
+		colDirection = ~((a ^ b) & (c | d));
 		colDirection &= 1;
-		rowDirection = (a & b) * (c ^ d) * (~(e * f));
+		rowDirection = (((d & e) ^ g) | (g & a));
 		rowDirection &= 1;
 		
 		if(colDirection)
