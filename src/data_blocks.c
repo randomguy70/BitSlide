@@ -150,15 +150,26 @@ int freeBlocks(struct DataBlock *first)
 int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum Direction dir)
 {
 	Byte *tempCol;
+	size_t checksum1 = 0, checksum2 = 0;
 
-	if(col < 0 || col >= block->width || (dir != SHIFT_UP && dir != SHIFT_DOWN))
+	if(col < 0 || (dir != SHIFT_UP && dir != SHIFT_DOWN) || block == NULL)
 	{
 		return 0;
 	}
-
+	if(ticks == 0)
+	{
+		return 1;
+	}
+	
+	col %= block->width;
 	ticks %= block->height;
-
+	
 	tempCol = malloc(block->height - ticks);
+	
+	for(unsigned int i = 0; i < block->width * block->height; i++)
+	{
+		checksum1 += block->data[i];
+	}
 
 	if(dir == SHIFT_DOWN)
 	{
@@ -186,6 +197,13 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 		}
 	}
 
+	// 0101 1011 0111 0001
+	// 0101 1011 0111 0001
+	// 0101 1011 0111 0001
+	// 0101 1011 0111 0001
+	// 0101 1011 0111 0001
+	// 0101 1011 0111 0001
+	
 	else if(dir == SHIFT_UP)
 	{
 		// save the wrapped bytes
@@ -197,7 +215,7 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 
 		// copy body
 
-		for(unsigned int i = 0; i < block->height - ticks - 1; i++)
+		for(unsigned int i = 0; i < block->height - ticks; i++)
 		{
 			Byte byte = getByte(block, col, i + ticks);
 			setByte(byte, block, col, i);
@@ -211,7 +229,18 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 			setByte(byte, block, col, i);
 		}
 	}
-
+	
+	// debugging checksum
+	
+	for(unsigned int i = 0; i < block->width * block->height; i++)
+	{
+		checksum2 += block->data[i];
+	}
+	if(checksum1 != checksum2)
+	{
+		printf("something went wrong in shifting column %u\n", col);
+	}
+	
 	return 1;
 }
 
@@ -415,11 +444,11 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 			printf("shifting data column failure\n");
 			return;
 		}
-		if(!(shiftRow(first, row, rowTicks, rowDirection)))
-		{
-			printf("shifting data row failure\n");
-			return;
-		}
+		// if(!(shiftRow(first, row, rowTicks, rowDirection)))
+		// {
+			// printf("shifting data row failure\n");
+			// return;
+		// }
 		
 		loopTicks++;
 	}
@@ -501,11 +530,11 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		
 		// make sure the shifting works
 		
-		if(!(shiftRow(first, row, rowTicks, rowDirection)))
-		{
-			printf("shifting data row failure\n");
-			return;
-		}
+		// if(!(shiftRow(first, row, rowTicks, rowDirection)))
+		// {
+			// printf("shifting data row failure\n");
+			// return;
+		// }
 		if(!(shiftCol(first, col, colTicks, colDirection)))
 		{
 			printf("shifting data column failure\n");
