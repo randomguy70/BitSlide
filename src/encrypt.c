@@ -10,9 +10,6 @@
 struct Data *encryptData(struct Data *data, char *key)
 {
 	struct Data *ret;
-	// int keyLen = strlen(key);
-	// int keyCursor = 0;
-	// Byte temp;
 	struct DataBlock *block1;
 	
 	block1 = dataToBlocks(data);

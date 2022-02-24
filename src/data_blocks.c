@@ -380,12 +380,13 @@ void printBlocks(struct DataBlock *first)
 	}
 }
 
-/* The actual encryption stuff, putting all this stuff together */
+/* The actual encryption stuff, putting all the code together :) */
 
 void scrambleBlockData(struct DataBlock *first, char *key)
 {
 	printf("Scrambling data\n");
 	
+	unsigned int blockNum = 1;
 	unsigned int keyLen, keySum;
 	unsigned int col, row, colTicks, rowTicks;
 	enum Direction colDirection, rowDirection;
@@ -404,81 +405,95 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 		keySum += key[i];
 	}
 	
-	// loopLen = (keySum * keyLen * seeds1[keySum % seedsLen]) % 50 + 20;
-	loopLen = 20;
-	loopTicks = 1;
-	printf("loopLen:%u", loopLen);
-	
-	// will expand this to go through the whole linked list. just bug-testing right now
-	
-	while(loopTicks <= loopLen)
+	while(1)
 	{
-		printf("loop %u:\n", loopTicks);
+		loopLen = (keySum * keyLen * seeds1[keySum % seedsLen]) % 50 + 20;
+		loopTicks = 1;
+		printf("loopLen:%u", loopLen);
 		
-		a = key[loopTicks % keyLen] / keyLen * keySum * (loopTicks % (seeds1[loopTicks % seedsLen]));
-		b = loopTicks * keySum | seeds2[a % seedsLen];
-		c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
-		d = (loopLen % loopTicks) * c ^ a + b;
-		e = key[loopTicks % keyLen] * ~(seeds3[(seeds2[(seeds1[(a * b * c * d) % seedsLen]) % seedsLen]) % seedsLen]);
-		f = loopTicks * loopLen + (d % a * e);
-		g = key[loopLen % keyLen] * seeds1[loopTicks % seedsLen] * (seeds2[(f ^ e) % seedsLen] & d) + seeds3[(~loopTicks) % seedsLen];
-		
-		col = (a * b) % first->width;
-		row = (b * c) % first->height;
-		
-		colTicks = (c % d) % first->height;
-		rowTicks = (d * e * f) % first->width;
-		
-		colDirection = ((a ^ b) & (c | d));
-		colDirection &= 1;
-		rowDirection = (((d * e) ^ g) | (g * a));
-		rowDirection &= 1;
-		
-		if(colDirection == 0)
+		while(loopTicks <= loopLen)
 		{
-			colDirection = SHIFT_UP;
+			printf("loop %u:\n", loopTicks);
+		
+			a = key[loopTicks % keyLen] / keyLen * keySum * (loopTicks % (seeds1[loopTicks % seedsLen]));
+			b = loopTicks * keySum | seeds2[a % seedsLen];
+			c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
+			d = (loopLen % loopTicks) * c ^ a + b;
+			e = key[loopTicks % keyLen] * ~(seeds3[(seeds2[(seeds1[(a * b * c * d) % seedsLen]) % seedsLen]) % seedsLen]);
+			f = loopTicks * loopLen + (d % a * e);
+			g = key[loopLen % keyLen] * seeds1[loopTicks % seedsLen] * (seeds2[(f ^ e) % seedsLen] & d) + seeds3[(~loopTicks) % seedsLen];
+			
+			col = (a * b) % first->width;
+			row = (b * c) % first->height;
+			
+			colTicks = (c % d) % first->height;
+			rowTicks = (d * e * f) % first->width;
+			
+			colDirection = ((a ^ b) & (c | d));
+			colDirection &= 1;
+			rowDirection = (((d * e) ^ g) | (g * a));
+			rowDirection &= 1;
+			
+			if(colDirection == 0)
+			{
+				colDirection = SHIFT_UP;
+			}
+			else
+			{
+				colDirection = SHIFT_DOWN;
+			}
+			
+			if(rowDirection == 0)
+			{
+				rowDirection = SHIFT_LEFT;
+			}
+			else
+			{
+				rowDirection = SHIFT_RIGHT;
+			}
+			
+			printf("action:: col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u\n", col, row, colTicks, rowTicks, colDirection, rowDirection);
+			
+			if(!(shiftCol(first, col, colTicks, colDirection)))
+			{
+				printf("shifting data column failure\n");
+				return;
+			}
+			if(!(shiftRow(first, row, rowTicks, rowDirection)))
+			{
+				printf("shifting data row failure\n");
+				return;
+			}
+			
+			loopTicks++;
+		}
+		
+		blockNum++;
+		if(first->next != NULL)
+		{
+			first = first->next;
 		}
 		else
 		{
-			colDirection = SHIFT_DOWN;
-		}
-		
-		if(rowDirection == 0)
-		{
-			rowDirection = SHIFT_LEFT;
-		}
-		else
-		{
-			rowDirection = SHIFT_RIGHT;
-		}
-		
-		printf("action:: col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u\n", col, row, colTicks, rowTicks, colDirection, rowDirection);
-		
-		if(!(shiftCol(first, col, colTicks, colDirection)))
-		{
-			printf("shifting data column failure\n");
 			return;
 		}
-		if(!(shiftRow(first, row, rowTicks, rowDirection)))
-		{
-			printf("shifting data row failure\n");
-			return;
-		}
-		
-		loopTicks++;
 	}
 	
 	return;
 }
 
-// XXX
-
 void unscrambleBlockData(struct DataBlock *first, char *key)
 {
 	printf("Unscrambling data\n");
+	
+	unsigned int blockNum, numBlocks;
+	struct DataBlock *block, **blockList;
+	
 	unsigned int keyLen, keySum;
+	
 	unsigned int col, row, colTicks, rowTicks;
 	enum Direction colDirection, rowDirection;
+	
 	unsigned int loopLen, loopTicks;
 	unsigned int a, b, c, d, e, f, g;
 	
@@ -494,70 +509,95 @@ void unscrambleBlockData(struct DataBlock *first, char *key)
 		keySum += key[i];
 	}
 	
-	// loopLen = (keySum * keyLen * seeds1[keySum % seedsLen]) % 50 + 20;
-	loopLen = 20;
-	loopTicks = loopLen;
-	printf("LoopLen:%d\n", loopLen);
+	// store a list of all the blocks so that I can work backward
 	
-	// will expand this to go through the whole linked list. just bug-testing right now
+	numBlocks = getNumBlocks(first);
+	blockList = malloc(sizeof(struct DataBlock) * numBlocks);
 	
-	while(loopTicks > 0)
+	block = first;
+	for(unsigned int i = 0; i < numBlocks; i++)
 	{
-		printf("loop %u:\n", loopTicks);
-		a = key[loopTicks % keyLen] / keyLen * keySum * (loopTicks % (seeds1[loopTicks % seedsLen]));
-		b = loopTicks * keySum | seeds2[a % seedsLen];
-		c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
-		d = (loopLen % loopTicks) * c ^ a + b;
-		e = key[loopTicks % keyLen] * ~(seeds3[(seeds2[(seeds1[(a * b * c * d) % seedsLen]) % seedsLen]) % seedsLen]);
-		f = loopTicks * loopLen + (d % a * e);
-		g = key[loopLen % keyLen] * seeds1[loopTicks % seedsLen] * (seeds2[(f ^ e) % seedsLen] & d) + seeds3[(~loopTicks) % seedsLen];
+		blockList[i] = block;
+		block = block->next;
+	}
+	
+	for(blockNum = numBlocks; blockNum > 0; blockNum--)
+	{
+		block = blockList[blockNum - 1];
 		
-		col = (a * b) % first->width;
-		row = (b * c) % first->height;
+		loopLen = (keySum * keyLen * seeds1[keySum % seedsLen]) % 50 + 20;
+		loopTicks = loopLen;
+		printf("LoopLen:%d\n", loopLen);
 		
-		colTicks = (c % d) % first->height;
-		rowTicks = (d * e * f) % first->width;
-		
-		colDirection = ((a ^ b) & (c | d));
-		colDirection &= 1;
-		rowDirection = (((d * e) ^ g) | (g * a));
-		rowDirection &= 1;
-		
-		if(colDirection == 0)
+		while(loopTicks > 0)
 		{
-			colDirection = SHIFT_DOWN;
+			printf("loop %u:\n", loopTicks);
+			a = key[loopTicks % keyLen] / keyLen * keySum * (loopTicks % (seeds1[loopTicks % seedsLen]));
+			b = loopTicks * keySum | seeds2[a % seedsLen];
+			c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
+			d = (loopLen % loopTicks) * c ^ a + b;
+			e = key[loopTicks % keyLen] * ~(seeds3[(seeds2[(seeds1[(a * b * c * d) % seedsLen]) % seedsLen]) % seedsLen]);
+			f = loopTicks * loopLen + (d % a * e);
+			g = key[loopLen % keyLen] * seeds1[loopTicks % seedsLen] * (seeds2[(f ^ e) % seedsLen] & d) + seeds3[(~loopTicks) % seedsLen];
+			
+			col = (a * b) % block->width;
+			row = (b * c) % block->height;
+			
+			colTicks = (c % d) % block->height;
+			rowTicks = (d * e * f) % block->width;
+			
+			colDirection = ((a ^ b) & (c | d));
+			colDirection &= 1;
+			rowDirection = (((d * e) ^ g) | (g * a));
+			rowDirection &= 1;
+			
+			if(colDirection == 0)
+			{
+				colDirection = SHIFT_DOWN;
+			}
+			else
+			{
+				colDirection = SHIFT_UP;
+			}
+			
+			if(rowDirection == 0)
+			{
+				rowDirection = SHIFT_RIGHT;
+			}
+			else
+			{
+				rowDirection = SHIFT_LEFT;
+			}
+			
+			printf("action:: col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u\n", col, row, colTicks, rowTicks, colDirection, rowDirection);
+			
+			// make sure the shifting works
+			
+			if(!(shiftRow(block, row, rowTicks, rowDirection)))
+			{
+				printf("shifting data row failure\n");
+				return;
+			}
+			if(!(shiftCol(block, col, colTicks, colDirection)))
+			{
+				printf("shifting data column failure\n");
+				return;
+			}
+			
+			loopTicks--;
 		}
-		else
-		{
-			colDirection = SHIFT_UP;
-		}
-		
-		if(rowDirection == 0)
-		{
-			rowDirection = SHIFT_RIGHT;
-		}
-		else
-		{
-			rowDirection = SHIFT_LEFT;
-		}
-		
-		printf("action:: col:%u, row: %u, colTicks:%u, rowTicks:%u, colDir:%u, rowDir:%u\n", col, row, colTicks, rowTicks, colDirection, rowDirection);
-		
-		// make sure the shifting works
-		
-		if(!(shiftRow(first, row, rowTicks, rowDirection)))
-		{
-			printf("shifting data row failure\n");
-			return;
-		}
-		if(!(shiftCol(first, col, colTicks, colDirection)))
-		{
-			printf("shifting data column failure\n");
-			return;
-		}
-		
-		loopTicks--;
 	}
 	
 	return;
+}
+
+unsigned int getNumBlocks(struct DataBlock *first)
+{
+	unsigned int num = 1;
+	while(first->next != NULL)
+	{
+		first = first->next;
+		num++;
+	}
+	return num;
 }

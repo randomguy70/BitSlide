@@ -34,6 +34,8 @@ struct Data *blocksToData(struct DataBlock *first);
 **/
 int freeBlocks(struct DataBlock *first);
 
+unsigned int getNumBlocks(struct DataBlock *first);
+
 int copyBytes(Byte *dest, Byte *src, int len);
 Byte getByte(struct DataBlock *block, int col, int row);
 Byte setByte(Byte value, struct DataBlock *block, int col, int row);
@@ -56,7 +58,7 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 **/
 int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum Direction dir);
 
-// Prints the data stored in a linked list of dataBlocks
+// Prints the data stored in a linked list of DataBlocks
 void printBlocks(struct DataBlock *first);
 
 // shifts the rows and columns in a given linked list of data blocks
