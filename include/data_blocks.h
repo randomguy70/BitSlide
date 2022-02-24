@@ -1,11 +1,17 @@
 #ifndef DATA_BLOCKS_H
 #define DATA_BLOCKS_H
 
+#include "../include/data.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "../include/data.h"
+#include <stdbool.h>
+
+#define BLOCK_WIDTH            10
+#define BLOCK_HEIGHT           12
+#define BLOCK_DATA_SIZE        BLOCK_WIDTH * BLOCK_HEIGHT
 
 struct DataBlock
 {
@@ -20,13 +26,13 @@ enum Direction {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
  * Copies any given data into a linked list of data blocks and returns a pointer to the first block
  * WARNING: This function frees the data from memory, so make sure to store the returned linked list!
 **/
-struct DataBlock *dataToBlocks(struct Data *data);
+struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted);
 
 /**
  * Copies the data from a given linked list of data blocks into a Data struct, and returns a pointer to the struct
  * WARNING: This function frees the linked list from memory, so make sure to store the returned data struct!
 **/
-struct Data *blocksToData(struct DataBlock *first);
+struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted);
 
 /**
  * Frees a given linked list of data blocks from memory

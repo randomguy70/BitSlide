@@ -12,7 +12,7 @@ typedef unsigned char Byte;
 struct Data
 {
 	Byte *ptr;
-	int size;
+	unsigned int size;
 };
 
 #ifdef __cplusplus

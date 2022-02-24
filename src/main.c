@@ -177,51 +177,52 @@ int main(int argc, char *argv[])
 			fseek(file, 0L, SEEK_SET);
 			fwrite(data->ptr, data->size, 1, file);
 			fclose(file);
-
+			
 			printf("Encrypted data %d bytes\nWrote to file %s\n", data->size, fileName);
 		}
 		else
 		{
 			printf("Not able to write to overwrite file %s\n", fileName);
 		}
-
+		
 		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
 		return 0;
 	}
-
+	
 	// decrypting
 	else if(option == DECRYPT)
 	{
-		// decryptData(&data, password);
+		data = decryptData(data, password);
 
 		if(data->size > MAX_DATA_SIZE)
 		{
 			printf("Data size limit exceeded\n");
 			return 0;
 		}
-		
 		file = fopen(fileName, "w");
-
+		
 		if(file)
 		{
 			fseek(file, 0L, SEEK_SET);
 			fwrite(data->ptr, data->size, 1, file);
 			fclose(file);
-
-			printf("Decrypted data %d bytes\nWrote to file %s", data->size, fileName);
+			
+			printf("Decrypted data %d bytes\nWrote to file %s\n", data->size, fileName);
 		}
 		else
 		{
-			printf("Original file not found");
+			printf("Not able to write to overwrite file %s\n", fileName);
 		}
-
+		
+		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
+		
 		return 0;
 	}
 
-	// if option is not valid (it never will get to this statement, but just in case)
+	// if option is not valid (it should will get to this statement, but just in case)
 	else
 	{
-	 	printf("Horrible disaster. Exiting...");
+	 	printf("Horrible disaster. Exiting...\n");
 	 	return 0;
 	}
 

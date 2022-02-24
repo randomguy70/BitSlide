@@ -1,51 +1,33 @@
 #include "../include/encrypt.h"
 
+#include "../include/data.h"
+#include "../include/data_blocks.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "../include/data.h"
-#include "../include/data_blocks.h"
+#include <stdbool.h>
 
 struct Data *encryptData(struct Data *data, char *key)
 {
 	struct Data *ret;
 	struct DataBlock *block1;
 	
-	block1 = dataToBlocks(data);
-	printf("converted data to blocks\n");
-	
-	scrambleBlockData(block1, key);
-	unscrambleBlockData(block1, key);
-	
-	ret = blocksToData(block1);
-	printf("converted blocks to data\n");
+	block1 = dataToBlocks(data, false);
+	scrambleBlockData(block1, key);	
+	ret = blocksToData(block1, true);
 	
 	return ret;
 }
 
 struct Data *decryptData(struct Data *data, char *key)
 {
-	struct Data *ret = malloc(sizeof(struct Data));
-	int keyLen = strlen(key);
-	int keyCursor = 0;
-	Byte temp = '\0';
-
-	ret->ptr = NULL;
-	ret->size = 0;
-
-	for(int i=0; i<data->size; i++)
-	{
-		// 0000 0011
-		temp = data->ptr[i];
-		data->ptr[i] >>= 2;
-		data->ptr[i] += (temp << 6);
-
-		data->ptr[i] ^= 0xe7;
-
-		data->ptr[i] -= key[keyCursor++];
-		if(keyCursor > keyLen - 1) {keyCursor = 0;}
-	}
-
+	struct Data *ret;
+	struct DataBlock *block1;
+	
+	block1 = dataToBlocks(data, true);
+	unscrambleBlockData(block1, key);
+	ret = blocksToData(block1, false);
+	
 	return ret;
 }
