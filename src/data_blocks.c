@@ -10,41 +10,46 @@
 struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 {
 	Byte *array;
-	int arraySize;
+	unsigned int arraySize;
 	struct DataBlock *block1 = NULL, *block = NULL;
-	int numBlocks = (data->size + sizeof(int)) / BLOCK_DATA_SIZE;
+	unsigned int numBlocks = (data->size + sizeof(int)) / BLOCK_DATA_SIZE;
 	
-	// if the data is encrypted, then i don't need to store its size at the end of the last block; it is already stored in encrypted format
+	// if the data is encrypted, then i don't need to store its size at the end of the last block, and it should fit exactly in a certain number of blocks
 	
 	if(dataIsEncrypted)
 	{
-		if(data->size > 0 && (data->size % (BLOCK_DATA_SIZE) == 0))
+		printf("data is encrypted\n");
+		// data should fit exactly in a number of blocks. otherwise, something's wrong
+		
+		if(data->size > 0 && data->size % BLOCK_DATA_SIZE != 0)
 		{
-			block = malloc(sizeof(struct DataBlock));
-			block1 = block;
-			
-			for(unsigned int i = 0; i < data->size / BLOCK_DATA_SIZE; i++)
-			{
-				block->width = BLOCK_WIDTH;
-				block->height = BLOCK_HEIGHT;
-				block->data = malloc(sizeof(Byte) * BLOCK_DATA_SIZE);
-				copyBytes(block->data, data->ptr + (i * BLOCK_DATA_SIZE), BLOCK_DATA_SIZE);
-				if(i + 1 < data->size / BLOCK_DATA_SIZE)
-				{
-					block->next = malloc(sizeof(struct DataBlock));
-					block = block->next;
-				}
-				else
-				{
-					block->next = NULL;
-					return block1;
-				}
-			}
-		}
-		else
-		{
-			printf("Data seems to have been tampered with\n");
+			printf("Data (%u) seems to have been tampered with\n", data->size);
 			return NULL;
+		}
+		
+		numBlocks = data->size / BLOCK_DATA_SIZE;
+		struct DataBlock **blockList = malloc(sizeof(struct DataBlock) * numBlocks);
+		printf("2");
+		block1 = blockList[0];
+		
+		for(unsigned int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
+		{
+			printf("writing block %d", i);
+			block = blockList[i];
+			block->width = BLOCK_WIDTH;
+			block->height = BLOCK_HEIGHT;
+			block->data = malloc(BLOCK_DATA_SIZE);
+			
+			copyBytes(block->data, data->ptr + dataOffset, BLOCK_DATA_SIZE);
+			
+			if(i < numBlocks - 1)
+			{
+				block->next = blockList[i+1];
+			}
+			else
+			{
+				block->next = NULL;
+			}
 		}
 		
 		return block1;
@@ -64,7 +69,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 
 	printf("initialising blocks\n");
 
-	for(int i=1; i <= numBlocks; i++)
+	for(unsigned int i=1; i <= numBlocks; i++)
 	{
 		block->width = BLOCK_WIDTH;
 		block->height = BLOCK_HEIGHT;
@@ -105,7 +110,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	// make the blocks' pointers point straight to the data
 	
-	for(int i = 0; i < numBlocks; i++)
+	for(unsigned int i = 0; i < numBlocks; i++)
 	{
 		block->data = array + (i * BLOCK_DATA_SIZE);
 
@@ -119,26 +124,25 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 {
 	struct DataBlock *block = first;
 	struct Data *data = malloc(sizeof(struct Data));
-	const int blockSize = first->width * first->height;
-	int bytesCopied = 0;
-	int numBlocks = 1;
-	int *sizePtr;
+	const unsigned int blockSize = first->width * first->height;
+	unsigned int bytesCopied = 0;
+	unsigned int numBlocks = 1;
+	unsigned int *sizePtr;
 	
 	if(dataIsEncrypted == true)
 	{
 		numBlocks = getNumBlocks(first);
 		data->size = numBlocks * BLOCK_DATA_SIZE;
-		data->ptr = malloc(sizeof(Byte) * BLOCK_DATA_SIZE * numBlocks);
+		data->ptr = malloc(data->size);
 		struct DataBlock *temp;
-		unsigned int offset = 0;
 		
+		for(unsigned int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
 		{
-			copyBytes(data->ptr + offset, first->data, first->width * first->height);
-			offset += first->width * first->height;
+			copyBytes(data->ptr + dataOffset, first->data, BLOCK_DATA_SIZE);
 			temp = first;
 			first = first->next;
 			free(temp);
-		} while(first->next != NULL)
+		}
 		
 		return data;
 	}
@@ -150,7 +154,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 		block = block->next;
 		numBlocks++;
 	}
-	sizePtr = (int*) (block->data + blockSize - 1 - sizeof(int));
+	sizePtr = (unsigned int*) (block->data + blockSize - 1 - sizeof(unsigned int));
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
 
@@ -163,7 +167,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 
 	block = first;
 
-	for(int i = 0; i < numBlocks - 1; i++)
+	for(unsigned int i = 0; i < numBlocks - 1; i++)
 	{
 		copyBytes(data->ptr + bytesCopied, block->data, blockSize);
 		bytesCopied += blockSize;

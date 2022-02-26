@@ -14,7 +14,7 @@ struct Data *encryptData(struct Data *data, char *key)
 	struct DataBlock *block1;
 	
 	block1 = dataToBlocks(data, false);
-	scrambleBlockData(block1, key);	
+	scrambleBlockData(block1, key);
 	ret = blocksToData(block1, true);
 	
 	return ret;
@@ -25,7 +25,13 @@ struct Data *decryptData(struct Data *data, char *key)
 	struct Data *ret;
 	struct DataBlock *block1;
 	
+	printf("data to blocks\n");
 	block1 = dataToBlocks(data, true);
+	if(block1 == NULL)
+	{
+		return NULL;
+	}
+	printf("unscramble data\n");
 	unscrambleBlockData(block1, key);
 	ret = blocksToData(block1, false);
 	

@@ -192,11 +192,17 @@ int main(int argc, char *argv[])
 	// decrypting
 	else if(option == DECRYPT)
 	{
+		printf("decrypting data\n");
 		data = decryptData(data, password);
 
 		if(data->size > MAX_DATA_SIZE)
 		{
 			printf("Data size limit exceeded\n");
+			return 0;
+		}
+		if(data == NULL)
+		{
+			printf("Decryption error\n");
 			return 0;
 		}
 		file = fopen(fileName, "w");
