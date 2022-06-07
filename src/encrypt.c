@@ -17,6 +17,11 @@ struct Data *encryptData(struct Data *data, char *key)
 	scrambleBlockData(block1, key);
 	ret = blocksToData(block1, true);
 	
+	if(ret == NULL)
+	{
+		printf("Bad return. Encryption failed\n");
+		return NULL;
+	}
 	return ret;
 }
 

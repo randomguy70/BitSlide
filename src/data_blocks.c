@@ -472,7 +472,7 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 		while(loopTicks <= loopLen)
 		{
 			printf("loop %u:\n", loopTicks);
-		
+			
 			a = key[loopTicks % keyLen] / keyLen * keySum * (loopTicks % (seeds1[loopTicks % seedsLen]));
 			b = loopTicks * keySum | seeds2[a % seedsLen];
 			c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
