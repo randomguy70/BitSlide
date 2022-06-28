@@ -170,8 +170,8 @@ int main(int argc, char *argv[])
 			printf("Data size limit exceeded\n");
 			return 0;
 		}
+		
 		file = fopen(fileName, "w");
-
 		if(file)
 		{
 			fseek(file, 0L, SEEK_SET);
@@ -205,6 +205,7 @@ int main(int argc, char *argv[])
 			printf("Decryption error\n");
 			return 0;
 		}
+		
 		file = fopen(fileName, "w");
 		
 		if(file)
@@ -229,6 +230,7 @@ int main(int argc, char *argv[])
 	else
 	{
 	 	printf("Horrible disaster. Exiting...\n");
+		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
 	 	return 0;
 	}
 

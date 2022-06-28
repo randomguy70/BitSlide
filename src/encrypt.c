@@ -16,7 +16,6 @@ struct Data *encryptData(struct Data *data, char *key)
 	block1 = dataToBlocks(data, false);
 	scrambleBlockData(block1, key);
 	ret = blocksToData(block1, true);
-	
 	if(ret == NULL)
 	{
 		printf("Bad return. Encryption failed\n");
@@ -32,12 +31,14 @@ struct Data *decryptData(struct Data *data, char *key)
 	
 	printf("data to blocks\n");
 	block1 = dataToBlocks(data, true);
+	printf("made data into blocks\n");
 	if(block1 == NULL)
 	{
+		printf("block1 contains null pointer\n");
 		return NULL;
 	}
 	printf("unscramble data\n");
-	unscrambleBlockData(block1, key);
+	// unscrambleBlockData(block1, key);
 	ret = blocksToData(block1, false);
 	
 	return ret;

@@ -6,39 +6,41 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 {
 	Byte *array;
 	unsigned int arraySize;
-	struct DataBlock *block1 = NULL, *block = NULL;
-	unsigned int numBlocks = (data->size + sizeof(int)) / BLOCK_DATA_SIZE;
+	struct DataBlock *block = NULL, *block1 = NULL;
+	struct DataBlock **blockList;
+	unsigned int numBlocks;
 	
-	// if the data is encrypted, then i don't need to store its size at the end of the last block, and it should fit exactly in a certain number of blocks
-	
+	// if the data is encrypted, then i don't need to store its size at the end of the last block
+	// * need to change block list into linked list only, not an array
+	printf("data size: %d, block size: %d", data->size, BLOCK_DATA_SIZE);
 	if(dataIsEncrypted)
 	{
-		printf("data is encrypted\n");
-		// data should fit exactly in a number of blocks. otherwise, something's wrong
+		numBlocks = (data->size) / BLOCK_DATA_SIZE;
 		
+		// the data length should be an exact multiple of the block data size
 		if(data->size > 0 && data->size % BLOCK_DATA_SIZE != 0)
 		{
-			printf("Data (%u) seems to have been tampered with\n", data->size);
+			printf("Data has been changed since encryption\nstopping decryption...\n");
 			return NULL;
 		}
 		
-		numBlocks = data->size / BLOCK_DATA_SIZE;
-		struct DataBlock **blockList = malloc(sizeof(struct DataBlock) * numBlocks);
-		printf("2");
-		block1 = blockList[0];
-		
+		numBlocks = (data->size / BLOCK_DATA_SIZE) + 1;
+		printf("number of blocks: %d", numBlocks);
+		blockList = malloc(sizeof(struct DataBlock) * numBlocks);
+				
 		for(unsigned int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
 		{
-			printf("writing block %d", i);
+			printf("writing block %d\n", i);
 			block = blockList[i];
-			block->width = BLOCK_WIDTH;
+			block->width  = BLOCK_WIDTH;
 			block->height = BLOCK_HEIGHT;
-			block->data = malloc(BLOCK_DATA_SIZE);
+			block->data   = malloc(BLOCK_DATA_SIZE);
 			
 			copyBytes(block->data, data->ptr + dataOffset, BLOCK_DATA_SIZE);
 			
@@ -55,26 +57,23 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 		return block1;
 	}
 	
-	if((data->size + sizeof(int)) % BLOCK_DATA_SIZE)
-	{
-		numBlocks++;
-	}
-
-	printf("numBlocks: %d\n", numBlocks);
-
-	block1 = malloc(sizeof(struct DataBlock));
-	block = block1;
-
-	// initialise block properties
-
+	// if the data isn't encrypted...
+	
+	numBlocks = ((data->size + sizeof(unsigned int)) / BLOCK_DATA_SIZE) + 1;
+	printf("number of blocks: %d\n", numBlocks);
+	
+	block = malloc(sizeof(struct DataBlock));
+	block1 = block;
+	
+	// initialise blocks
 	printf("initialising blocks\n");
-
-	for(unsigned int i=1; i <= numBlocks; i++)
+	
+	for(unsigned int i = 0; i < numBlocks; i++)
 	{
 		block->width = BLOCK_WIDTH;
 		block->height = BLOCK_HEIGHT;
-
-		if(i == numBlocks)
+		
+		if(i == numBlocks - 1)
 		{
 			block->next = NULL;
 			break;
@@ -87,33 +86,25 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	}
 	
 	// copy data into blocks
-	
 	printf("copying data into blocks\n");
 	
 	arraySize = BLOCK_DATA_SIZE * numBlocks;
-	array = malloc(arraySize);
+	array = calloc(1, arraySize);
 	
 	copyBytes(array, data->ptr, data->size);
 	
-	// fill the end of the data with 0's
-	
-	for(Byte *i = array + data->size; i < array + arraySize - 1 - sizeof(int); i++)
-	{
-		*i = 0;
-	}
-	
 	// store the size at the end of the data
 	
-	*((int*) (array + arraySize - 1 - sizeof(int))) = data->size;
+	*((int*) (array + arraySize - 1 - sizeof(unsigned int))) = data->size;
+	
+	// make the blocks' pointers point straight to the data in the array
 	
 	block = block1;
-	
-	// make the blocks' pointers point straight to the data
 	
 	for(unsigned int i = 0; i < numBlocks; i++)
 	{
 		block->data = array + (i * BLOCK_DATA_SIZE);
-
+		
 		block = block->next;
 	}
 	
@@ -147,8 +138,8 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 		return data;
 	}
 	
-	// get data size (stored in the last 4 bytes of the last block)
-
+	// if not encrypted, get data size (stored in unsigned int at end of last block)
+	
 	while(block->next != NULL)
 	{
 		block = block->next;
@@ -157,31 +148,31 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	sizePtr = (unsigned int*) (block->data + blockSize - 1 - sizeof(unsigned int));
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
-
+	
 	printf("counted %d blocks\n", numBlocks);
 	printf("data size: %d\n", data->size);
-
+	
 	// copy the data from every block except the last
-
+	
 	printf("copying blocks into data struct\n");
-
+	
 	block = first;
-
+	
 	for(unsigned int i = 0; i < numBlocks - 1; i++)
 	{
 		copyBytes(data->ptr + bytesCopied, block->data, blockSize);
 		bytesCopied += blockSize;
 		block = block->next;
 	}
-
+	
 	// copy the data from the last block (minus the last 4 bytes)
-
+	
 	printf("copying last block\n");
-
+	
 	copyBytes(data->ptr + bytesCopied, block->data, blockSize - sizeof(int));
-
+	
 	freeBlocks(first);
-
+	
 	return data;
 }
 
@@ -443,13 +434,14 @@ void printBlocks(struct DataBlock *first)
 void scrambleBlockData(struct DataBlock *first, char *key)
 {
 	printf("Scrambling data\n");
+	return;
 	
 	unsigned int blockNum = 1;
 	unsigned int keyLen, keySum;
 	unsigned int col, row, colTicks, rowTicks;
 	enum Direction colDirection, rowDirection;
 	unsigned int loopLen, loopTicks;
-	unsigned int a, b, c, d, e, f, g;
+	unsigned int a, b, c, d;
 	
 	const unsigned int seedsLen = 256;
 	unsigned int seeds1[256] = {2086415110, 3596784488, 2052297812, 1132699022, 2530478996, 470460936, 4074303221, 3560729855, 2816606610, 3677724586, 1266663920, 2431711568, 4111360060, 3889468708, 2482733696, 3506094432, 588465066, 2915559976, 3635200752, 749775638, 566916508, 2451245392, 3304193936, 2136715776, 3340588496, 324708224, 4031292500, 3477555012, 1204470240, 3097635164, 1053731248, 9116784, 2352203522, 4038947556, 2091368767, 1368223806, 3490934056, 3026164720, 1341366880, 3350288904, 783176054, 48491410, 1830819598, 1542028125, 3913110916, 1517262964, 2913010240, 171437619, 3863174192, 1014507464, 3109120127, 446131020, 2625930144, 2823309809, 844783616, 3153831942, 1806793064, 3891302096, 2618716800, 2700698144, 574721804, 2589499513, 3565328472, 4270242800, 3637454072, 2143383992, 4204493038, 1073820270, 1691188736, 4127994160, 2411977392, 3287321472, 195098752, 2016888036, 835968500, 3858623280, 4195517716, 3567255582, 1072487908, 2511918212, 203714960, 2157781418, 4165314048, 2660025984, 2468112896, 2494376066, 1877148544, 2390139290, 2680694192, 1597891696, 2492166191, 998758528, 1238731897, 2925172830, 3993275800, 956992268, 2388525648, 332132265, 132579088, 2563066484, 2242264512, 3680042540, 2529520160, 176938296, 4147498586, 1025112448, 3074995720, 1355579208, 1625368288, 905531404, 2047995184, 2379787470, 546820495, 1577903752, 2592130840, 1393406120, 4103390758, 1802354348, 939961944, 3419826516, 652372217, 1337074672, 2680893620, 3295248547, 2172221074, 2056316256, 2655213568, 1951300218, 1052017520, 3545415730, 3882420224, 2966088576, 1896284261, 3404405410, 3042534556, 1306145214, 4078519216, 2861013244, 2590183468, 3660567688, 2445978272, 1585496100, 1934610124, 599107456, 705641156, 100121424, 3433210262, 3684843578, 1313444476, 170621140, 3088983131, 1787810311, 4261091064, 4024099836, 3206594383, 2034407104, 200952056, 3751633920, 3125442083, 2044208444, 2098748722, 605408864, 1983640984, 4022452448, 1398011584, 2298421056, 3586927843, 4234589932, 1687153226, 3505910672, 4012974656, 2098594874, 3576675232, 2248950822, 3907363348, 130500288, 483459835, 653552970, 3748483816, 1185529984, 2720522830, 2479680056, 2802407398, 3203996236, 2656636736, 686294548, 3469359374, 4251289616, 3853623504, 1144207984, 3657198046, 2890170240, 3231581082, 2274092956, 3582746232, 2369724640, 105297358, 2414765224, 1665021768, 921889772, 3000365036, 2532102469, 3490673962, 1170829068, 900251904, 4248710544, 996739784, 1933828652, 81800152, 899825858, 926269088, 2907392396, 4073871636, 4014062416, 1258152160, 215259592, 71878176, 3376217526, 1296525395, 3206270048, 557613616, 1587047650, 1648069168, 1304755052, 3445439144, 2953208294, 2121956192, 3290742607, 1101786428, 2306024060, 1265989064, 3858737234, 762844392, 3728396191, 1749389308, 1307776440, 2869450300, 1342624024, 1641635728, 1566538048, 2079512272, 1141694196, 577433120, 2237970772, 3074384952, 838555028, 3241693428, 3327673052, 598159710, 3962291819, 247432008, 3688870144, 2187076434, 1342179970, 3731689372, 116611665};
@@ -477,20 +469,15 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 			b = loopTicks * keySum | seeds2[a % seedsLen];
 			c = key[loopLen % keyLen] * seeds1[keyLen % seedsLen] * seeds2[keySum % seedsLen] % seeds3[b % seedsLen];
 			d = (loopLen % loopTicks) * c ^ a + b;
-			e = key[loopTicks % keyLen] * ~(seeds3[(seeds2[(seeds1[(a * b * c * d) % seedsLen]) % seedsLen]) % seedsLen]);
-			f = loopTicks * loopLen + (d % a * e);
-			g = key[loopLen % keyLen] * seeds1[loopTicks % seedsLen] * (seeds2[(f ^ e) % seedsLen] & d) + seeds3[(~loopTicks) % seedsLen];
 			
 			col = (a * b) % first->width;
 			row = (b * c) % first->height;
 			
-			colTicks = (c % d) % first->height;
-			rowTicks = (d * e * f) % first->width;
+			colTicks = (c % d + 1) % first->height;
+			rowTicks = (~(a / b) + 1) % first->width;
 			
-			colDirection = ((a ^ b) & (c | d));
-			colDirection &= 1;
-			rowDirection = (((d * e) ^ g) | (g * a));
-			rowDirection &= 1;
+			colDirection = ((a ^ b) & (c | d)) & 1;
+			rowDirection = (((a * d) ^ b) | (c * d)) & 1;
 			
 			if(colDirection == 0)
 			{
@@ -543,7 +530,7 @@ void scrambleBlockData(struct DataBlock *first, char *key)
 void unscrambleBlockData(struct DataBlock *first, char *key)
 {
 	printf("Unscrambling data\n");
-	
+	return;
 	unsigned int blockNum, numBlocks;
 	struct DataBlock *block, **blockList;
 	
