@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		printf("File %s is empty\n", fileName);
 		return 0;
 	}
-
+	
 	// encrypting
 	if(option == ENCRYPT)
 	{
@@ -225,15 +225,15 @@ int main(int argc, char *argv[])
 		
 		return 0;
 	}
-
-	// if option is not valid (it should will get to this statement, but just in case)
+	
+	// shouldn't ever get here, but just in case...
 	else
 	{
 	 	printf("Horrible disaster. Exiting...\n");
 		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
 	 	return 0;
 	}
-
+	
 	return 0;
 }
 

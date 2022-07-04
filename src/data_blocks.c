@@ -115,12 +115,12 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 {
 	struct DataBlock *block = first;
 	struct Data *data = malloc(sizeof(struct Data));
-	const unsigned int blockSize = first->width * first->height;
-	unsigned int bytesCopied = 0;
 	unsigned int numBlocks = 1;
 	unsigned int *sizePtr;
 	
-	if(dataIsEncrypted == true)
+	// if encrypted
+	
+	if(dataIsEncrypted)
 	{
 		numBlocks = getNumBlocks(first);
 		data->size = numBlocks * BLOCK_DATA_SIZE;
@@ -138,13 +138,16 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 		return data;
 	}
 	
-	// if not encrypted, get data size (stored in unsigned int at end of last block)
+	// if not encrypted
 	
 	while(block->next != NULL)
 	{
 		block = block->next;
 		numBlocks++;
 	}
+	
+	// get data size (stored in unsigned int at end of last block)
+	
 	sizePtr = (unsigned int*) (block->data + blockSize - 1 - sizeof(unsigned int));
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
@@ -152,16 +155,15 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	printf("counted %d blocks\n", numBlocks);
 	printf("data size: %d\n", data->size);
 	
-	// copy the data from every block except the last
+	// copy all the data from every block except the last
 	
-	printf("copying blocks into data struct\n");
+	printf("copying unencrypted blocks into data\n");
 	
 	block = first;
 	
-	for(unsigned int i = 0; i < numBlocks - 1; i++)
+	for(unsigned int i = 0, bytesCopied = 0; i < numBlocks - 1; i++, bytesCopied += BLOCK_DATA_SIZE)
 	{
-		copyBytes(data->ptr + bytesCopied, block->data, blockSize);
-		bytesCopied += blockSize;
+		copyBytes(data->ptr + bytesCopied, block->data, BLOCK_DATA_SIZE);
 		block = block->next;
 	}
 	
@@ -169,8 +171,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	
 	printf("copying last block\n");
 	
-	copyBytes(data->ptr + bytesCopied, block->data, blockSize - sizeof(int));
-	
+	copyBytes(data->ptr + (BLOCK_DATA_SIZE * (numBlocks - 1)), block->data, data->size - (BLOCK_DATA_SIZE * (numBlocks - 1)));
 	freeBlocks(first);
 	
 	return data;
