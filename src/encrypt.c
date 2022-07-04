@@ -14,7 +14,7 @@ struct Data *encryptData(struct Data *data, char *key)
 	struct DataBlock *block1;
 	
 	block1 = dataToBlocks(data, false);
-	scrambleBlockData(block1, key);
+	// scrambleBlockData(block1, key);
 	ret = blocksToData(block1, true);
 	if(ret == NULL)
 	{

@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 		argHelp();
 		return 0;
 	}
-
+	
 	// help arg(s)
 	{
 		char *variations[] = {"Help", "-Help", "help", "-help", "H", "-H", "h", "-h", "Syntax", "-Syntax", "syntax", "-syntax", "assistance", "ayuda", "please"};

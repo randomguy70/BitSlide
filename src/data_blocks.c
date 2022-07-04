@@ -14,15 +14,13 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	unsigned int arraySize;
 	struct DataBlock *block = NULL, *block1 = NULL;
 	struct DataBlock **blockList;
-	unsigned int numBlocks;
+	int numBlocks;
 	
 	// if the data is encrypted, then i don't need to store its size at the end of the last block
 	// * need to change block list into linked list only, not an array
-	printf("data size: %d, block size: %d", data->size, BLOCK_DATA_SIZE);
-	if(dataIsEncrypted)
+	
+	if(dataIsEncrypted == true)
 	{
-		numBlocks = (data->size) / BLOCK_DATA_SIZE;
-		
 		// the data length should be an exact multiple of the block data size
 		if(data->size > 0 && data->size % BLOCK_DATA_SIZE != 0)
 		{
@@ -31,10 +29,10 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 		}
 		
 		numBlocks = (data->size / BLOCK_DATA_SIZE) + 1;
-		printf("number of blocks: %d", numBlocks);
+		printf("data size: %d, block size: %d, numBlocks: %d\n", data->size, BLOCK_DATA_SIZE, numBlocks);
 		blockList = malloc(sizeof(struct DataBlock) * numBlocks);
-				
-		for(unsigned int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
+		
+		for(int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
 		{
 			printf("writing block %d\n", i);
 			block = blockList[i];
@@ -59,8 +57,8 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	// if the data isn't encrypted...
 	
-	numBlocks = ((data->size + sizeof(unsigned int)) / BLOCK_DATA_SIZE) + 1;
-	printf("number of blocks: %d\n", numBlocks);
+	numBlocks = (data->size + sizeof(unsigned int)) / BLOCK_DATA_SIZE + 1;
+	printf("data size: %d, block size: %d, numBlocks: %d\n", data->size, BLOCK_DATA_SIZE, numBlocks);
 	
 	block = malloc(sizeof(struct DataBlock));
 	block1 = block;
@@ -68,7 +66,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	// initialise blocks
 	printf("initialising blocks\n");
 	
-	for(unsigned int i = 0; i < numBlocks; i++)
+	for(int i = 0; i < numBlocks; i++)
 	{
 		block->width = BLOCK_WIDTH;
 		block->height = BLOCK_HEIGHT;
@@ -101,7 +99,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	block = block1;
 	
-	for(unsigned int i = 0; i < numBlocks; i++)
+	for(int i = 0; i < numBlocks; i++)
 	{
 		block->data = array + (i * BLOCK_DATA_SIZE);
 		
@@ -148,7 +146,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	
 	// get data size (stored in unsigned int at end of last block)
 	
-	sizePtr = (unsigned int*) (block->data + blockSize - 1 - sizeof(unsigned int));
+	sizePtr = (unsigned int*) (block->data + BLOCK_DATA_SIZE - 1 - sizeof(unsigned int));
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
 	
