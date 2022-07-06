@@ -179,8 +179,8 @@ int freeBlocks(struct DataBlock *first)
 	int i = 1;
 	struct DataBlock *temp;
 
-	// since the data in all the data blocks is actually one large block in memory, the first block's data pointer is technically the pointer to all of the data
-
+	// since the data in all the blocks points to the same large block in memory, freeing the 1st pointer frees it all
+	
 	free(first->data);
 
 	while(first->next != NULL)
