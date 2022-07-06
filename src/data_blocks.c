@@ -13,7 +13,6 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	Byte *array;
 	unsigned int arraySize;
 	struct DataBlock *block = NULL, *block1 = NULL;
-	struct DataBlock **blockList;
 	int numBlocks = 0;
 	
 	// if the data is encrypted, then just write it into blocks
@@ -27,15 +26,12 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 			printf("Data has been changed since encryption\nstopping decryption...\n");
 			return NULL;
 		}
+		numBlocks = data->size / BLOCK_DATA_SIZE;
+		printf("data size: %d, number of encrypted blocks: %d\n", data->size, numBlocks);
 		
-		numBlocks = (data->size / BLOCK_DATA_SIZE) + 1;
-		printf("data size: %d, block size: %d, numBlocks: %d\n", data->size, BLOCK_DATA_SIZE, numBlocks);
-		blockList = malloc(sizeof(struct DataBlock) * numBlocks);
-		
+		block = malloc(sizeof(struct DataBlock));
 		for(int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
 		{
-			printf("writing block %d\n", i);
-			block = blockList[i];
 			block->width  = BLOCK_WIDTH;
 			block->height = BLOCK_HEIGHT;
 			block->data   = malloc(BLOCK_DATA_SIZE);
@@ -44,7 +40,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 			
 			if(i < numBlocks - 1)
 			{
-				block->next = blockList[i+1];
+				block->next = malloc(sizeof(struct DataBlock));
 			}
 			else
 			{
@@ -52,7 +48,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 			}
 		}
 		
-		return block1;
+		return block;
 	}
 	
 	// if the data isn't encrypted, store its size at end of last block

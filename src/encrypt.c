@@ -31,10 +31,9 @@ struct Data *decryptData(struct Data *data, char *key)
 	
 	printf("data to blocks\n");
 	block1 = dataToBlocks(data, true);
-	printf("made data into blocks\n");
 	if(block1 == NULL)
 	{
-		printf("block1 contains null pointer\n");
+		printf("data to blocks process failed\n");
 		return NULL;
 	}
 	printf("unscramble data\n");
