@@ -57,7 +57,11 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	// if the data isn't encrypted, store its size at end of last block
 	
-	numBlocks = (data->size + (int)sizeof(unsigned int)) / BLOCK_DATA_SIZE + 1;
+	numBlocks = (data->size + (int)sizeof(unsigned int)) / BLOCK_DATA_SIZE;
+	if((data->size + (int)sizeof(unsigned int)) % BLOCK_DATA_SIZE)
+	{
+		numBlocks++;
+	}
 	printf("data: %d bytes, number of unencrypted blocks: %d\n", data->size, numBlocks);
 	
 	block = malloc(sizeof(struct DataBlock));
@@ -93,7 +97,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	// store the size at the end of the data
 	
-	*((int*) (array + arraySize - 1 - sizeof(unsigned int))) = data->size;
+	*((unsigned int*) (array + arraySize - 1 - sizeof(unsigned int))) = data->size;
 	
 	// make the blocks' pointers point straight to the data in the array
 	
@@ -102,7 +106,6 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	for(int i = 0; i < numBlocks; i++)
 	{
 		block->data = array + (i * BLOCK_DATA_SIZE);
-		
 		block = block->next;
 	}
 	
