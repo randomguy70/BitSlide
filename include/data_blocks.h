@@ -11,7 +11,7 @@ extern "C" {
 
 #define BLOCK_WIDTH            10
 #define BLOCK_HEIGHT           12
-#define BLOCK_DATA_SIZE        BLOCK_WIDTH * BLOCK_HEIGHT
+#define BLOCK_DATA_SIZE        120
 
 struct DataBlock
 {

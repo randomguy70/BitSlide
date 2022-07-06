@@ -2,17 +2,18 @@
 #define DATA_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#define MAX_DATA_SIZE 10000000
+#define MAX_DATA_SIZE 10000000  // 10 Megabytes
 
 typedef unsigned char Byte;
 
 struct Data
 {
 	Byte *ptr;
-	unsigned int size;
+	int size;
 };
 
 #ifdef __cplusplus

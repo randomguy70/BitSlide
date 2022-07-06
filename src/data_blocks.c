@@ -14,10 +14,10 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	unsigned int arraySize;
 	struct DataBlock *block = NULL, *block1 = NULL;
 	struct DataBlock **blockList;
-	int numBlocks;
+	int numBlocks = 0;
 	
-	// if the data is encrypted, then i don't need to store its size at the end of the last block
-	// * need to change block list into linked list only, not an array
+	// if the data is encrypted, then just write it into blocks
+	// * should to change block list into linked list only for size benefits, not an array
 	
 	if(dataIsEncrypted == true)
 	{
@@ -55,10 +55,10 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 		return block1;
 	}
 	
-	// if the data isn't encrypted...
+	// if the data isn't encrypted, store its size at end of last block
 	
-	numBlocks = (data->size + sizeof(unsigned int)) / BLOCK_DATA_SIZE + 1;
-	printf("data size: %d, block size: %d, numBlocks: %d\n", data->size, BLOCK_DATA_SIZE, numBlocks);
+	numBlocks = (data->size + (int)sizeof(unsigned int)) / BLOCK_DATA_SIZE + 1;
+	printf("data: %d bytes, number of unencrypted blocks: %d\n", data->size, numBlocks);
 	
 	block = malloc(sizeof(struct DataBlock));
 	block1 = block;
