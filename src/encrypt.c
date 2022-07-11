@@ -36,7 +36,7 @@ struct Data *decryptData(struct Data *data, char *key)
 		printf("data to blocks process failed\n");
 		return NULL;
 	}
-	printf("unscramble data\n");
+	printf("\nunscramble data\n");
 	// unscrambleBlockData(block1, key);
 	ret = blocksToData(block1, false);
 	

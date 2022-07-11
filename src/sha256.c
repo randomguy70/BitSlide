@@ -18,7 +18,7 @@
 //  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-#include "./include/sha256.h"
+#include "../include/sha256.h"
 
 #ifndef _cbmc_
 #define __CPROVER_assume(...) do {} while(0)

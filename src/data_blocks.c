@@ -20,6 +20,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 	
 	if(dataIsEncrypted == true)
 	{
+		printf("\n");
 		// the data length should be an exact multiple of the block data size
 		if(data->size > 0 && data->size % BLOCK_DATA_SIZE != 0)
 		{
@@ -31,25 +32,29 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 		printf("data size: %d, number of encrypted blocks: %d\n", data->size, numBlocks);
 		
 		block = malloc(sizeof(struct DataBlock));
-		for(int i = 0, dataOffset = 0; i < numBlocks; i++, dataOffset += BLOCK_DATA_SIZE)
+		block1 = block;
+		for(int i = 0; i < numBlocks; i++)
 		{
 			block->width  = BLOCK_WIDTH;
 			block->height = BLOCK_HEIGHT;
 			block->data   = malloc(BLOCK_DATA_SIZE);
 			
-			copyBytes(block->data, data->ptr + dataOffset, BLOCK_DATA_SIZE);
+			copyBytes(block->data, data->ptr + (i*BLOCK_DATA_SIZE), BLOCK_DATA_SIZE);
 			
 			if(i < numBlocks - 1)
 			{
 				block->next = malloc(sizeof(struct DataBlock));
+				block = block->next;
+				continue;
 			}
 			else
 			{
 				block->next = NULL;
+				break;
 			}
 		}
 		
-		return block;
+		return block1;
 	}
 	
 	// if the data isn't encrypted, store its size at end of last block
@@ -393,35 +398,20 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row)
 
 void printBlocks(struct DataBlock *first)
 {
-	char *string = malloc(first->width + 1);
-	int numBlocks = 0;
-	
-	string[first->width] = '\0';
-	
-	while(1)
-	{
-		printf("Block %d", numBlocks);
-	
-		for(unsigned int i = 0; i < first->height; i++)
+	printf("printing all block data in ASCII format:\n");
+	while(1) {
+		for(int i = 0; i < BLOCK_DATA_SIZE; i++)
 		{
-			for(unsigned int ii = 0; ii < first->width; ii++)
-			{
-				string[i] = (char) getByte(first, ii, i);
-			}
-
-			printf("%s\n", string + 1);
+			printf("%c", first->data[i]);
 		}
-
-		if(first->next == NULL)
-		{
-			return;
-		}
-		else
+		if(first->next != NULL)
 		{
 			first = first->next;
 		}
-
-		numBlocks++;
+		else
+		{
+			return;
+		}
 	}
 }
 
