@@ -40,6 +40,9 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted);
 **/
 int freeBlocks(struct DataBlock *first);
 
+/**
+ * Returns the number of datablocks in a linked list, starting with 1
+**/
 unsigned int getNumBlocks(struct DataBlock *first);
 
 int copyBytes(Byte *dest, Byte *src, int len);

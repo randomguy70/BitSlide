@@ -26,6 +26,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 			printf("Data has been changed since encryption\nstopping decryption...\n");
 			return NULL;
 		}
+		
 		numBlocks = data->size / BLOCK_DATA_SIZE;
 		printf("data size: %d, number of encrypted blocks: %d\n", data->size, numBlocks);
 		
@@ -115,7 +116,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	unsigned int numBlocks = 1;
 	unsigned int *sizePtr;
 	
-	// if encrypted
+	// if encrypted...
 	
 	if(dataIsEncrypted)
 	{
@@ -135,17 +136,16 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 		return data;
 	}
 	
-	// if not encrypted
-	
+	// if not encrypted...
+	// get data size (stored in unsigned int at end of last block)
 	while(block->next != NULL)
 	{
 		block = block->next;
 		numBlocks++;
 	}
 	
-	// get data size (stored in unsigned int at end of last block)
-	
 	sizePtr = (unsigned int*) (block->data + BLOCK_DATA_SIZE - 1 - sizeof(unsigned int));
+	block = first; // make sure the block points to the first one
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
 	
@@ -155,8 +155,6 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	// copy all the data from every block except the last
 	
 	printf("copying unencrypted blocks into data\n");
-	
-	block = first;
 	
 	for(unsigned int i = 0, bytesCopied = 0; i < numBlocks - 1; i++, bytesCopied += BLOCK_DATA_SIZE)
 	{
