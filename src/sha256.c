@@ -273,7 +273,6 @@ void sha256(const void *data, size_t len, uint8_t *hash)
     sha256_done(&ctx, hash);
 } // sha256
 
-
 #if 0
 #pragma mark - Self Test
 #endif

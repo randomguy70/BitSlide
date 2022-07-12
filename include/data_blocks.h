@@ -9,9 +9,9 @@ extern "C" {
 
 #include <stdbool.h>
 
-#define BLOCK_WIDTH            10
-#define BLOCK_HEIGHT           12
-#define BLOCK_DATA_SIZE        120
+#define BLOCK_WIDTH            16
+#define BLOCK_HEIGHT           16
+#define BLOCK_DATA_SIZE        (BLOCK_WIDTH * BLOCK_HEIGHT)
 
 struct DataBlock
 {

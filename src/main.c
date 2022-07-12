@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	enum Options option = 0;
 	FILE *file;
 	struct Data *data = malloc(sizeof(struct Data));
-
+	
 	// no args passed
 	if(argc < 2)
 	{
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
+	
 	for(int i=1; i<argc;)
 	{
 		if(strcmp(argv[i], "-i") == 0)
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
-
+	
 	if(fileName == NULL)
 	{
 		printf("No file inputted\n");
@@ -143,14 +143,14 @@ int main(int argc, char *argv[])
 	{
 		printf("WARNING: Your password should be at least 8 characters for maximum security!\n");
 	}
-
+	
 	file = fopen(fileName, "r");
 	if(!file)
 	{
 		printf("File %s not found\n", fileName);
 		return 0;
 	}
-
+	
 	data = getFileData(file);
 	fclose(file);
 	
