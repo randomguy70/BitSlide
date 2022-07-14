@@ -15,12 +15,44 @@ void undoByteSubstitution  (struct Data* data, char* key);
 struct Data *encryptData(struct Data* data, char* key)
 {
 	struct Data *ret;
-	struct DataBlock *block1;
+	struct DataBlock *first, *temp;
+	uint32_t hashData[64];
+	uint32_t counter = 0, a, b, c, d;
+	
+	// get 8 iterations of SHA_256 hash of key
+	
+	sha256(key, strlen(key), hashData);
+	
+	for(int i = 1; i < (sizeof(hashData) / SHA256_SIZE_BYTES); i++)
+	{
+		sha256(hashData + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashData + i*SHA256_SIZE_BYTES);
+	}
 	
 	doByteSubstitution(data, key);
 	
-	block1 = dataToBlocks(data, false);
-	ret = blocksToData(block1, true);
+	first = dataToBlocks(data, false);
+	
+	// main encryption process
+	
+	temp = first;
+	
+	do {
+		for(uint32_t i = 0; i < 64; i++)
+		{
+			a = hashData[counter % sizeof(hashData)];
+			b = hashData[(i * a) % sizeof(hashData)];
+			c = hashData[hashData[i] % sizeof(hashData)];
+			d = (i << (a && 0xf)) ^ (b);
+			
+			shiftRow(temp, a, b, c % 2+2);
+			shiftCol(temp, d, c, b % 2);
+			
+			counter++;
+		}
+	}
+	while ((temp = temp->next) != NULL);
+	
+	ret = blocksToData(first, true);
 	if(ret == NULL)
 	{
 		return NULL;
@@ -31,17 +63,63 @@ struct Data *encryptData(struct Data* data, char* key)
 struct Data *decryptData(struct Data* data, char* key)
 {
 	struct Data *ret;
-	struct DataBlock *block1;
+	struct DataBlock *first, *temp, **blockArr;
+	uint32_t hashData[64];
+	uint32_t counter, a, b, c, d;
+	int numBlocks = 64, curBlock;
 	
-	block1 = dataToBlocks(data, true);
-	if(block1 == NULL)
+	// get 8 iterations of SHA_256 hash of key
+	
+	sha256(key, strlen(key), hashData);
+	
+	for(int i = 1; i < (sizeof(hashData) / SHA256_SIZE_BYTES); i++)
+	{
+		sha256(hashData + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashData + i*SHA256_SIZE_BYTES);
+	}
+	
+	first = dataToBlocks(data, true);
+	if(first == NULL)
 	{
 		printf("data to blocks process failed\n");
 		return NULL;
 	}
-	ret = blocksToData(block1, false);
 	
+	temp = first;
+	
+	// generate array of block pointers to optimize working backwards
+	numBlocks = getNumBlocks(first);
+	curBlock = numBlocks - 1;
+	counter = numBlocks * 64;
+	blockArr = malloc(sizeof(struct DataBlock*) * numBlocks);
+	
+	for(int i = 0; i < numBlocks; i++)
+	{
+		blockArr[i] = temp;
+		temp = temp->next;
+	}
+	
+	do {
+		temp = blockArr[curBlock];
+		
+		for(uint32_t i = 63; i >= 0; i--)
+		{
+			a = hashData[counter % sizeof(hashData)];
+			b = hashData[(i * a) % sizeof(hashData)];
+			c = hashData[hashData[i] % sizeof(hashData)];
+			d = (i << (a & 0xf)) ^ (b);
+			
+			shiftCol(temp, d, c, !(b % 2));
+			shiftRow(temp, a, b, !(c % 2)+2);
+			
+			counter--;
+		}
+	}
+	while (--curBlock > -1);
+	
+	ret = blocksToData(first, false);
 	undoByteSubstitution(ret, key);
+	
+	free(blockArr);
 	
 	return ret;
 }
@@ -77,23 +155,6 @@ void doByteSubstitution(struct Data* data, char* key)
 		table[i] = table[randIndex];
 		table[randIndex] = temp;
 	}
-	
-	// print S-Box
-	
-	printf("\nS-Box:\n");
-	for(int i = 0; i < 255; i++)
-	{
-		if(i % 16 == 0)
-		{
-			printf("\n");
-		}
-		printf("0x%x ", table[i]);
-		if(table[i] < 0x10)
-		{
-			printf(" ");
-		}
-	}
-	printf("\n");
 	
 	// replace every byte you're encrypting with a byte from the table using the original byte as the index
 	
@@ -143,23 +204,6 @@ void undoByteSubstitution(struct Data* data, char* key)
 		inverseTable[table[i]] = i;
 	}
 	
-	// print inverse S-Box
-	
-	printf("\ninverse S-Box:\n");
-	for(int i = 0; i < 255; i++)
-	{
-		if(i % 16 == 0)
-		{
-			printf("\n");
-		}
-		printf("0x%x ", table[i]);
-		if(table[i] < 0x10)
-		{
-			printf(" ");
-		}
-	}
-	printf("\n");
-	
 	// replace every byte you're decrypting with a byte from the table using the original byte as the index
 	
 	for(int i = 0; i < data->size; i++)
@@ -167,3 +211,4 @@ void undoByteSubstitution(struct Data* data, char* key)
 		data->ptr[i] = inverseTable[data->ptr[i]];
 	}
 }
+

@@ -201,11 +201,12 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
 	Byte *tempCol;
 	size_t checksum1 = 0, checksum2 = 0;
 
-	if(col < 0 || (dir != SHIFT_UP && dir != SHIFT_DOWN) || block == NULL)
+	if(col < 0 || dir < 0 || block == NULL)
 	{
 		return 0;
 	}
 	
+	dir %= 2;
 	col %= block->width;
 	ticks %= block->height;
 	
@@ -294,11 +295,11 @@ int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum
 	unsigned int i, j;
 	size_t checksum1 = 0, checksum2 = 0;
 
-	if(row < 0 || (dir != SHIFT_LEFT && dir != SHIFT_RIGHT))
+	if(row < 0 || dir < 0)
 	{
 		return 0;
 	}
-	
+	dir = (dir % 2) + 2;
 	row %= block->height;
 	ticks %= block->width;
 	
