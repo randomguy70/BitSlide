@@ -1,6 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -15,7 +17,7 @@ typedef unsigned char Byte;
 struct Data
 {
 	Byte *ptr;
-	unsigned int size;
+	uint32_t size;
 };
 
 #ifdef __cplusplus

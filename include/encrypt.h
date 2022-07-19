@@ -7,6 +7,8 @@ extern "C" {
 
 #include "../include/data.h"
 
+#define ENCRYPTION_ROUNDS 32
+
 enum Options {ENCRYPT = 1, DECRYPT};
 
 struct Data *encryptData(struct Data *data, char *key);

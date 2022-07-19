@@ -3,6 +3,8 @@
 
 #include "../include/data.h"
 
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,7 +17,7 @@ extern "C" {
 
 struct DataBlock
 {
-	unsigned int width, height;
+	uint32_t width, height;
 	Byte *data;
 	struct DataBlock *next;
 };
@@ -43,7 +45,7 @@ int freeBlocks(struct DataBlock *first);
 /**
  * Returns the number of datablocks in a linked list, starting with 1
 **/
-unsigned int getNumBlocks(struct DataBlock *first);
+uint32_t getNumBlocks(struct DataBlock *first);
 
 int copyBytes(Byte *dest, Byte *src, int len);
 Byte getByte(struct DataBlock *block, int col, int row);
@@ -56,7 +58,7 @@ Byte setByte(Byte value, struct DataBlock *block, int col, int row);
  * @param ticks how many bytes to shift the column by
  * @param dir whether to shift the column up or down (SHIFT_UP, SHIFT_DOWN)
 **/
-int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum Direction dir);
+int shiftCol(struct DataBlock *block, uint32_t col, uint32_t ticks, enum Direction dir);
 
 /**
  * Shifts a row of bytes in a data block left or right a given number of ticks (wraps around)
@@ -65,7 +67,7 @@ int shiftCol(struct DataBlock *block, unsigned int col, unsigned int ticks, enum
  * @param ticks how many bytes to shift the row by
  * @param dir whether to shift the left or right (SHIFT_LEFT, SHIFT_RIGHT)
 **/
-int shiftRow(struct DataBlock *block, unsigned int row, unsigned int ticks, enum Direction dir);
+int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Direction dir);
 
 // Prints the data stored in a linked list of DataBlocks
 void printBlocks(struct DataBlock *first);
