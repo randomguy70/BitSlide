@@ -291,7 +291,7 @@ uint32_t sha256Table(uint8_t* arr, uint32_t len)
 	
 	for(uint32_t i = 1; i < iterations; i++)
 	{
-		sha256(arr + (i-1) * SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, arr + i * SHA256_SIZE_BYTES);
+		sha256(arr + (i-1) * SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, arr + (i * SHA256_SIZE_BYTES));
 	}
 	
 	return iterations;
@@ -311,6 +311,7 @@ void printSHA256Table(uint8_t* arr, uint32_t len)
 	}
 	printf("\n\n");
 }
+
 #ifdef __cplusplus
 }
 #endif

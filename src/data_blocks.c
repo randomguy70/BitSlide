@@ -28,7 +28,7 @@ struct DataBlock *dataToBlocks(struct Data *data, bool dataIsEncrypted)
 		}
 		
 		numBlocks = data->size / BLOCK_DATA_SIZE;
-		printf("data size: %d, number of encrypted blocks: %d\n", data->size, numBlocks);
+		printf("DataToBlocks | data size: %d, number of encrypted blocks: %d\n", data->size, numBlocks);
 		
 		block = malloc(sizeof(struct DataBlock));
 		block1 = block;
@@ -148,7 +148,7 @@ struct Data *blocksToData(struct DataBlock *first, bool dataIsEncrypted)
 	data->size = *sizePtr;
 	data->ptr = malloc(data->size);
 	
-	printf("data size: %d\n", data->size);
+	printf("BlocksToData | data size: %d\n", data->size);
 	
 	// copy all the data from every block except the last
 	

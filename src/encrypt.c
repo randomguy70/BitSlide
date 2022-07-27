@@ -38,7 +38,7 @@ struct Data *encryptData(struct Data* data, char* key)
 	
 	struct Data *ret;
 	struct DataBlock *first, *block;
-	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8];
+	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8] = {0};
 	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
 	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
 	uint32_t i3, i5;
@@ -49,7 +49,7 @@ struct Data *encryptData(struct Data* data, char* key)
 	sha256Table((uint8_t*)hashData, sizeof(hashData));
 	printSHA256Table((uint8_t*)hashData, sizeof(hashData));
 	
-	doByteSubstitution(data, key);
+	// doByteSubstitution(data, key);
 	first = dataToBlocks(data, false);
 	
 	// main encryption process
@@ -57,8 +57,10 @@ struct Data *encryptData(struct Data* data, char* key)
 	block = first;
 	
 	do {
+		printf("Block\n\n");
 		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
 		{
+			
 			i3 = i * i * i * K[i & 0xff];
 			i5 = i3 * i * i * K[i3 & 0xff];
 			
@@ -93,7 +95,7 @@ struct Data *decryptData(struct Data* data, char* key)
 	
 	struct Data *ret;
 	struct DataBlock *first, *block;
-	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8];
+	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8] = {0};
 	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
 	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
 	uint32_t i3, i5;
@@ -108,10 +110,12 @@ struct Data *decryptData(struct Data* data, char* key)
 	
 	// main decryption process
 	
+	printf("Unscrambling Bytes\n");
+	
 	block = first;
 	
 	do {
-		for(uint32_t i = ENCRYPTION_ROUNDS - 1 ; i <= 0; i--)
+		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
 		{
 			i3 = i * i * i * K[i & 0xff];
 			i5 = i3 * i * i * K[i3 & 0xff];
@@ -123,7 +127,7 @@ struct Data *decryptData(struct Data* data, char* key)
 			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
 			colDir   = hashData[~i5 % hashDataLen] & 0x1;
 			
-			// switch row & col directions
+			// invert the scrambling
 			
 			rowDir ^= 0x1;
 			colDir ^= 0x1;
@@ -138,7 +142,7 @@ struct Data *decryptData(struct Data* data, char* key)
 	while (block != NULL);
 	
 	ret = blocksToData(first, false);
-	undoByteSubstitution(ret, key);
+	// undoByteSubstitution(ret, key);
 	
 	return ret;
 }
@@ -230,4 +234,3 @@ void undoByteSubstitution(struct Data* data, char* key)
 		data->ptr[i] = inverseTable[data->ptr[i]];
 	}
 }
-
