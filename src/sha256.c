@@ -20,6 +20,8 @@
 
 #include "../include/sha256.h"
 
+#include <stdio.h>
+
 #ifndef _cbmc_
 #define __CPROVER_assume(...) do {} while(0)
 #endif
@@ -273,6 +275,42 @@ void sha256(const void *data, size_t len, uint8_t *hash)
     sha256_done(&ctx, hash);
 } // sha256
 
+/* ------------------------------------------------- ADDED CODE ------------------------------------------------- */
+uint32_t sha256Table(uint8_t* arr, uint32_t len)
+{
+	uint32_t iterations;
+	
+	if(len == 0 || len % SHA256_SIZE_BYTES != 0)
+	{
+		printf("SHA table needs to be > 0 bytes and multiple of of 'SHA256_SIZE_BYTES'\n");
+		return 0;
+	}
+	iterations = len / SHA256_SIZE_BYTES;
+	
+	sha256(arr, SHA256_SIZE_BYTES, arr);
+	
+	for(uint32_t i = 1; i < iterations; i++)
+	{
+		sha256(arr + (i-1) * SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, arr + i * SHA256_SIZE_BYTES);
+	}
+	
+	return iterations;
+}
+
+void printSHA256Table(uint8_t* arr, uint32_t len)
+{
+	printf("printing SHA256 Table\n");
+	
+	for(uint32_t i = 0; i < len; i++)
+	{
+		if(i % SHA256_SIZE_BYTES == 0)
+		{
+			printf("\n");
+		}
+		printf("%x", arr[i]);
+	}
+	printf("\n\n");
+}
 #ifdef __cplusplus
 }
 #endif

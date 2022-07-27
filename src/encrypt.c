@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 void doByteSubstitution    (struct Data* data, char* key);
 void undoByteSubstitution  (struct Data* data, char* key);
@@ -37,22 +38,18 @@ struct Data *encryptData(struct Data* data, char* key)
 	
 	struct Data *ret;
 	struct DataBlock *first, *block;
-	uint8_t hashData[256];
-	uint32_t row, col, rowTicks, colTicks, rowDir, colDir, keyLen, counter = 0;
+	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8];
+	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
+	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
+	uint32_t i3, i5;
 	
-	keyLen = strlen(key);
+	// seed the table & fill it with random numbers
 	
-	// get 8 iterations of SHA_256 hash of key
-	
-	sha256(key, strlen(key), (uint8_t*)hashData);
-	
-	for(int i = 1; i < ((int)sizeof(hashData) / SHA256_SIZE_BYTES); i++)
-	{
-		sha256(hashData + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashData + i*SHA256_SIZE_BYTES);
-	}
+	strcpy((char*)hashData, key);
+	sha256Table((uint8_t*)hashData, sizeof(hashData));
+	printSHA256Table((uint8_t*)hashData, sizeof(hashData));
 	
 	doByteSubstitution(data, key);
-	
 	first = dataToBlocks(data, false);
 	
 	// main encryption process
@@ -62,24 +59,24 @@ struct Data *encryptData(struct Data* data, char* key)
 	do {
 		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
 		{
-			row      = hashData[(~(i) * K[counter & 0xff]) & 0xff];
-			col      = hashData[(i * keyLen ^ K[i & 0xff]) & 0xff];
-			rowTicks = hashData[((~row) ^ K[col] ^ counter) & 0xff];
-			colTicks = hashData[(counter ^ hashData[counter & 0xff]) & 0xff];
-			rowDir   = (hashData[((counter * counter) ^ (~hashData[i & 0xff])) & 0xff] & 0x1) + 2;
-			colDir   = hashData[(K[counter & 0xff] ^ (K[(~i) & 0xff])) & 0xff] & 0x1;
+			i3 = i * i * i * K[i & 0xff];
+			i5 = i3 * i * i * K[i3 & 0xff];
 			
-			printf("row: %u, col: %u, rowTicks: %u, colTicks: %u, rowDir: %u, colDir: %u\n", row, col, rowTicks, colTicks, rowDir, colDir);
+			row      = hashData[ i % hashDataLen]  & (BLOCK_WIDTH  - 1);
+			col      = hashData[~i % hashDataLen]  & (BLOCK_HEIGHT - 1);
+			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
+			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
+			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
+			colDir   = hashData[~i5 % hashDataLen] & 0x1;
+			
+			printf("row: %u,    col: %u,    rowTicks: %u,    colTicks: %u,    rowDir: %u,    colDir: %u\n", row, col, rowTicks, colTicks, rowDir, colDir);
 			
 			shiftRow(block, row, rowTicks, rowDir);
 			shiftCol(block, col, colTicks, colDir);
-			
-			counter++;
 		}
 		block = block->next;
 	}
 	while (block != NULL);
-	printf("counter: %u", counter);
 	
 	ret = blocksToData(first, true);
 	
@@ -96,23 +93,18 @@ struct Data *decryptData(struct Data* data, char* key)
 	
 	struct Data *ret;
 	struct DataBlock *first, *block;
-	uint8_t hashData[256];
-	uint32_t row, col, rowTicks, colTicks, rowDir, colDir, keyLen, counter, numBlocks;
+	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8];
+	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
+	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
+	uint32_t i3, i5;
 	
-	keyLen = strlen(key);
+	// seed the table & fill it with random numbers
 	
-	// get 8 iterations of SHA_256 hash of key
-	
-	sha256(key, strlen(key), hashData);
-	
-	for(int i = 1; i < (int)(sizeof(hashData) / SHA256_SIZE_BYTES); i++)
-	{
-		sha256(hashData + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashData + i*SHA256_SIZE_BYTES);
-	}
+	strcpy((char*)hashData, key);
+	sha256Table((uint8_t*)hashData, sizeof(hashData));
+	printSHA256Table((uint8_t*)hashData, sizeof(hashData));
 	
 	first = dataToBlocks(data, true);
-	numBlocks = getNumBlocks(first);
-	counter = ENCRYPTION_ROUNDS * numBlocks - 1;
 	
 	// main decryption process
 	
@@ -121,23 +113,25 @@ struct Data *decryptData(struct Data* data, char* key)
 	do {
 		for(uint32_t i = ENCRYPTION_ROUNDS - 1 ; i <= 0; i--)
 		{
-			row      = hashData[(~(i) * K[counter & 0xff]) & 0xff];
-			col      = hashData[(i * keyLen ^ K[i & 0xff]) & 0xff];
-			rowTicks = hashData[((~row) ^ K[col] ^ counter) & 0xff];
-			colTicks = hashData[(counter ^ hashData[counter & 0xff]) & 0xff];
-			rowDir   = (hashData[((counter * counter) ^ (~hashData[i & 0xff])) & 0xff] & 0x1) + 2;
-			colDir   = hashData[(K[counter & 0xff] ^ (K[(~i) & 0xff])) & 0xff] & 0x1;
+			i3 = i * i * i * K[i & 0xff];
+			i5 = i3 * i * i * K[i3 & 0xff];
 			
-			// flipping the least bit happens to change both directions
+			row      = hashData[ i % hashDataLen]  & (BLOCK_WIDTH  - 1);
+			col      = hashData[~i % hashDataLen]  & (BLOCK_HEIGHT - 1);
+			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
+			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
+			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
+			colDir   = hashData[~i5 % hashDataLen] & 0x1;
+			
+			// switch row & col directions
+			
 			rowDir ^= 0x1;
 			colDir ^= 0x1;
 			
-			printf("row: %u, col: %u, rowTicks: %u, colTicks: %u, rowDir: %u, colDir: %u\n", row, col, rowTicks, colTicks, rowDir, colDir);
+			printf("row: %u,    col: %u,    rowTicks: %u,    colTicks: %u,    rowDir: %u,    colDir: %u\n", row, col, rowTicks, colTicks, rowDir, colDir);
 			
 			shiftCol(block, col, colTicks, colDir);
 			shiftRow(block, row, rowTicks, rowDir);
-			
-			counter--;
 		}
 		block = block->next;
 	}

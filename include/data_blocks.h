@@ -17,12 +17,11 @@ extern "C" {
 
 struct DataBlock
 {
-	uint32_t width, height;
 	Byte *data;
 	struct DataBlock *next;
 };
 
-enum Direction {SHIFT_UP, SHIFT_DOWN, SHIFT_LEFT, SHIFT_RIGHT};
+enum Direction {SHIFT_UP = 0, SHIFT_DOWN = 1, SHIFT_LEFT = 0, SHIFT_RIGHT = 1};
 
 /**
  * Copies any given data into a linked list of data blocks and returns a pointer to the first block
@@ -71,10 +70,6 @@ int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Directi
 
 // Prints the data stored in a linked list of DataBlocks
 void printBlocks(struct DataBlock *first);
-
-// shifts the rows and columns in a given linked list of data blocks
-void scrambleBlockData(struct DataBlock *first, char *key);
-void unscrambleBlockData(struct DataBlock *first, char *key);
 
 // changes the value of each byte in a given linked list of data blocks
 void randomizeBytes(struct DataBlock *first, char *pw);

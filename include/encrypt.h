@@ -7,7 +7,7 @@ extern "C" {
 
 #include "../include/data.h"
 
-#define ENCRYPTION_ROUNDS 32
+#define ENCRYPTION_ROUNDS 64
 
 enum Options {ENCRYPT = 1, DECRYPT};
 
