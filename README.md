@@ -22,7 +22,7 @@ The executable binary will be in the folder labeled output.
 
 # Running
 
-To run ***BitSlide***, grab the latest release or see the instructions above to build it from source. Once you have an executable, copy and paste the absolute path to the executable into a terminal and hit enter. The absolute path should look something like `enter code here` Or, you can drag & drop the executable file into a terminal and hit enter.
+To run ***BitSlide***, grab the latest release or see the instructions above to build it from source. Once you have an executable, copy and paste the absolute path to the executable into a terminal and hit enter. The absolute path should look something like `/Users/Name/Desktop/BitSlide/output/main` Or, you can drag & drop the executable file into a terminal and hit enter.
 
 **Note**: Make sure you enter the necessary command line arguments!
 
