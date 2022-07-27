@@ -49,7 +49,7 @@ struct Data *encryptData(struct Data* data, char* key)
 	sha256Table((uint8_t*)hashData, sizeof(hashData));
 	printSHA256Table((uint8_t*)hashData, sizeof(hashData));
 	
-	// doByteSubstitution(data, key);
+	doByteSubstitution(data, key);
 	first = dataToBlocks(data, false);
 	
 	// main encryption process
@@ -60,12 +60,11 @@ struct Data *encryptData(struct Data* data, char* key)
 		printf("Block\n\n");
 		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
 		{
-			
-			i3 = i * i * i * K[i & 0xff];
+			i3 = i  * i * i * K[i  & 0xff];
 			i5 = i3 * i * i * K[i3 & 0xff];
 			
-			row      = hashData[ i % hashDataLen]  & (BLOCK_WIDTH  - 1);
-			col      = hashData[~i % hashDataLen]  & (BLOCK_HEIGHT - 1);
+			row      = hashData[ i  % hashDataLen] & (BLOCK_WIDTH  - 1);
+			col      = hashData[~i  % hashDataLen] & (BLOCK_HEIGHT - 1);
 			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
 			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
 			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
@@ -115,13 +114,13 @@ struct Data *decryptData(struct Data* data, char* key)
 	block = first;
 	
 	do {
-		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
+		for(uint32_t j = 0, i = ENCRYPTION_ROUNDS - 1; j < ENCRYPTION_ROUNDS; j++, i--)
 		{
 			i3 = i * i * i * K[i & 0xff];
 			i5 = i3 * i * i * K[i3 & 0xff];
 			
-			row      = hashData[ i % hashDataLen]  & (BLOCK_WIDTH  - 1);
-			col      = hashData[~i % hashDataLen]  & (BLOCK_HEIGHT - 1);
+			row      = hashData[ i  % hashDataLen] & (BLOCK_WIDTH  - 1);
+			col      = hashData[~i  % hashDataLen] & (BLOCK_HEIGHT - 1);
 			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
 			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
 			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
@@ -142,7 +141,7 @@ struct Data *decryptData(struct Data* data, char* key)
 	while (block != NULL);
 	
 	ret = blocksToData(first, false);
-	// undoByteSubstitution(ret, key);
+	undoByteSubstitution(ret, key);
 	
 	return ret;
 }
