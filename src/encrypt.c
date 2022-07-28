@@ -9,7 +9,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
-#include <time.h>
 
 void doByteSubstitution    (struct Data* data, char* key);
 void undoByteSubstitution  (struct Data* data, char* key);
