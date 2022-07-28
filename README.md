@@ -1,4 +1,5 @@
-<p style="text-align:center"> # *BitSlide* </p>
+# ***<div align="center"> BitSlide </div>***
+
 ## ***BitSlide*** is an lightning-fast encryption program similar to `AES` (Advanced Encryption Standard). It utilizes `SHA-256` hashing to scramble any file into an unrecognizable mess only recoverable with the *exact* original password.
 
  The fact that ***Bitslide*** is open source **does not** mean that it can be hacked, because the encryption process is entirely dependent on the password. In other words, if you change one character of your password, the encrypted output will be entirely different! If your password is at least 8 characters and not obvious, it would take many millions of years for a hacker to crack it.
