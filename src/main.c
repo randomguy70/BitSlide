@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 			printf("Not able to write to overwrite file %s\n", fileName);
 		}
 		
-		printf("Execution time: %lu MS.", clock()/(CLOCKS_PER_SEC / 1000));
+		printf("Execution time: %lu MS, %lu Clock Cycles", clock()/(CLOCKS_PER_SEC / 1000), clock());
 		return 0;
 	}
 	
