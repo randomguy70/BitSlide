@@ -45,6 +45,8 @@ void sha256_done(sha256_context *ctx, uint8_t *hash);
 
 void sha256(const void *data, size_t len, uint8_t *hash);
 uint32_t sha256Table(uint8_t* arr, uint32_t len);
+
+// prints len bytes from the pointer arr in hexadecimal format
 void printSHA256Table(uint8_t* arr, uint32_t len);
 
 #ifdef __cplusplus

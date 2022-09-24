@@ -1,141 +1,88 @@
 #include "../include/encrypt.h"
 
+#include "../include/file.h"
 #include "../include/data.h"
 #include "../include/data_blocks.h"
 #include "../include/sha256.h"
+#include "../include/password.h"
 
 #include <stdio.h>
 #include <string.h>
 
-void doByteSubstitution    (struct Data* data, char* key);
-void undoByteSubstitution  (struct Data* data, char* key);
-
-struct Data *encryptData(struct Data* data, char* key)
+uint32_t encryptData(struct file* file, struct password *password)
 {
-	printf("encrypting\n");
+	uint32_t row, col, rowTicks, colTicks, rowDir, colDir, val;
 	
-	struct Data *ret;
-	struct DataBlock *first, *block;
-	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8] = {0};
-	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
-	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
-	uint32_t i3, i5;
+	doByteSubstitution(&file->data, password->shaArray);
 	
-	// seed the table & fill it with random numbers
+	// data scrambling
 	
-	strcpy((char*)hashData, key);
-	sha256Table((uint8_t*)hashData, sizeof(hashData));
-	
-	doByteSubstitution(data, key);
-	first = dataToBlocks(data, false);
-	
-	// main encryption process
-	
-	block = first;
-	
-	do {
-		for(uint32_t i = 0; i < ENCRYPTION_ROUNDS; i++)
-		{
-			i3 = i  * i * i;
-			i5 = i3 * i * i;
-			
-			row      = hashData[ i  % hashDataLen] & (BLOCK_WIDTH  - 1);
-			col      = hashData[~i  % hashDataLen] & (BLOCK_HEIGHT - 1);
-			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
-			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
-			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
-			colDir   = hashData[~i5 % hashDataLen] & 0x1;
-			
-			shiftRow(block, row, rowTicks, rowDir);
-			shiftCol(block, col, colTicks, colDir);
-		}
-		block = block->next;
-	}
-	while (block != NULL);
-	
-	ret = blocksToData(first, true);
-	
-	if(ret == NULL)
+	for(uint32_t blockOffset = 0; blockOffset < file->data.size; blockOffset+=256)
 	{
-		return NULL;
+		for(uint32_t round = 0; round < ENCRYPTION_ROUNDS; round++)
+		{
+			val = password->shaArray[round & (SHA_ARRAY_WORD_LEN - 1)];
+			
+			row      = (val >> 0 ) & (BLOCK_WIDTH  - 1);
+			col      = (val >> 4 ) & (BLOCK_HEIGHT - 1);
+			rowTicks = (val >> 8 ) & (BLOCK_WIDTH  - 1);
+			colTicks = (val >> 12) & (BLOCK_HEIGHT - 1);
+			rowDir   = (val >> 16) & 0x1;
+			colDir   = (val >> 17) & 0x1;
+						
+			shiftRow(file->data.ptr + blockOffset, row, rowTicks, rowDir);
+			shiftCol(file->data.ptr + blockOffset, col, colTicks, colDir);
+		}
 	}
-	return ret;
+	
+	return 1;
 }
 
-struct Data *decryptData(struct Data* data, char* key)
-{
-	printf("decrypting\n");
-	
-	struct Data *ret;
-	struct DataBlock *first, *block;
-	uint32_t hashData[(SHA256_SIZE_BYTES / sizeof(uint32_t)) * 8] = {0};
-	const uint32_t hashDataLen = sizeof(hashData) / sizeof(uint32_t);
-	uint32_t row, col, rowTicks, colTicks, rowDir, colDir;
-	uint32_t i3, i5;
-	
-	// seed the table & fill it with random numbers
-	
-	strcpy((char*)hashData, key);
-	sha256Table((uint8_t*)hashData, sizeof(hashData));
-	// printSHA256Table((uint8_t*)hashData, sizeof(hashData));
-	
-	first = dataToBlocks(data, true);
-	
+uint32_t decryptData(struct file* file, struct password *password)
+{		
+	uint32_t row, col, rowTicks, colTicks, rowDir, colDir, val;
+		
 	// main decryption process
-	
-	printf("Unscrambling Bytes\n");
-	
-	block = first;
-	
-	do {
-		for(uint32_t j = 0, i = ENCRYPTION_ROUNDS - 1; j < ENCRYPTION_ROUNDS; j++, i--)
-		{
-			i3 = i * i * i;
-			i5 = i3 * i * i;
 			
-			row      = hashData[ i  % hashDataLen] & (BLOCK_WIDTH  - 1);
-			col      = hashData[~i  % hashDataLen] & (BLOCK_HEIGHT - 1);
-			rowTicks = hashData[ i3 % hashDataLen] & (BLOCK_WIDTH  - 1);
-			colTicks = hashData[~i3 % hashDataLen] & (BLOCK_HEIGHT - 1);
-			rowDir   = hashData[ i5 % hashDataLen] & 0x1;
-			colDir   = hashData[~i5 % hashDataLen] & 0x1;
+	for(uint32_t block = 0; block < file->data.size; block += 256)
+	{
+		for(uint32_t round = ENCRYPTION_ROUNDS - 1, k = ENCRYPTION_ROUNDS; k > 0; round--, k--)
+		{
+			val = password->shaArray[round & (SHA_ARRAY_WORD_LEN - 1)];
+			
+			row      = (val >> 0 ) & (BLOCK_WIDTH  - 1);
+			col      = (val >> 4 ) & (BLOCK_HEIGHT - 1);
+			rowTicks = (val >> 8 ) & (BLOCK_WIDTH  - 1);
+			colTicks = (val >> 12) & (BLOCK_HEIGHT - 1);
+			rowDir   = (val >> 16) & 0x1;
+			colDir   = (val >> 17) & 0x1;
 			
 			// invert the scrambling
 			
 			rowDir ^= 0x1;
 			colDir ^= 0x1;
-			
-			shiftCol(block, col, colTicks, colDir);
-			shiftRow(block, row, rowTicks, rowDir);
+						
+			shiftCol(file->data.ptr + block, col, colTicks, colDir);
+			shiftRow(file->data.ptr + block, row, rowTicks, rowDir);
 		}
-		block = block->next;
 	}
-	while (block != NULL);
 	
-	ret = blocksToData(first, false);
-	undoByteSubstitution(ret, key);
+	undoByteSubstitution(&file->data, password->shaArray);
 	
-	return ret;
+	file->data.size = *(uint32_t*)(file->data.ptr + file->data.size - (uint32_t)(sizeof(uint32_t)));
+	
+	return 1;
 }
-			
-void doByteSubstitution(struct Data* data, char* key)
+
+void doByteSubstitution(struct Data *data, uint8_t *shaArray)
 {
+	const tableSize = 256;
 	uint8_t table[256];
-	uint8_t hashTable[256];
 	uint8_t temp, randIndex;
 	
-	// get 8 iterations of SHA_256 hash of key
+	// generate matrice containing all 1-Byte values (0x00 to 0xff)
 	
-	sha256(key, strlen(key), hashTable);
-	
-	for(int i = 1; i < (int)(sizeof(hashTable) / SHA256_SIZE_BYTES); i++)
-	{
-		sha256(hashTable + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashTable + i*SHA256_SIZE_BYTES);
-	}
-	
-	// generate 16*16 matrice containing all 1-Byte values (0x00 to 0xff)
-	
-	for(int i = 0; i < (int)sizeof(table); i++)
+	for(int i = 0; i < tableSize; i++)
 	{
 		table[i] = i;
 	}
@@ -144,7 +91,7 @@ void doByteSubstitution(struct Data* data, char* key)
 	
 	for(int i = 0; i < (int)sizeof(table); i++)
 	{
-		randIndex = hashTable[i];
+		randIndex = shaArray[i];
 		temp = table[i];
 		table[i] = table[randIndex];
 		table[randIndex] = temp;
@@ -158,34 +105,25 @@ void doByteSubstitution(struct Data* data, char* key)
 	}
 }
 
-void undoByteSubstitution(struct Data* data, char* key)
+void undoByteSubstitution(struct Data *data, uint8_t *shaArray)
 {
+	const tableSize = 256;
 	uint8_t table[256];
 	uint8_t inverseTable[256];
-	uint8_t hashTable[256];
 	uint8_t temp, randIndex;
 	
-	// get 8 iterations of SHA_256 hash of key
+	// generate matrice containing all 1-Byte values (0x00 to 0xff)
 	
-	sha256(key, strlen(key), hashTable);
-	
-	for(int i = 1; i < (int)(sizeof(hashTable) / SHA256_SIZE_BYTES); i++)
-	{
-		sha256(hashTable + (i-1)*SHA256_SIZE_BYTES, SHA256_SIZE_BYTES, hashTable + i*SHA256_SIZE_BYTES);
-	}
-	
-	// generate 16*16 matrice containing all 1-Byte values (0x00 to 0xff)
-	
-	for(int i = 0; i < (int)sizeof(table); i++)
+	for(int i = 0; i < tableSize; i++)
 	{
 		table[i] = i;
 	}
 	
 	// use the Fisher–Yates shuffle (using the hash table) to randomize values in the matrice
 	
-	for(uint32_t i = 0; i < (int)sizeof(table); i++)
+	for(uint32_t i = 0; i < tableSize; i++)
 	{
-		randIndex = hashTable[i];
+		randIndex = shaArray[i];
 		temp = table[i];
 		table[i] = table[randIndex];
 		table[randIndex] = temp;
@@ -193,7 +131,7 @@ void undoByteSubstitution(struct Data* data, char* key)
 	
 	// calculate the inverse of the table
 	
-	for(uint32_t i = 0; i < (int)sizeof(table); i++)
+	for(uint32_t i = 0; i < tableSize; i++)
 	{
 		inverseTable[table[i]] = i;
 	}

@@ -186,48 +186,33 @@ int freeBlocks(struct DataBlock *first)
 	return i;
 }
 
-int shiftCol(struct DataBlock *block, uint32_t col, uint32_t ticks, enum Direction dir)
+uint32_t shiftCol(Byte *blockPtr, uint32_t col, uint32_t ticks, enum Direction dir)
 {
 	Byte *tempCol;
-	size_t checksum1 = 0, checksum2 = 0;
-
-	if(col < 0 || dir < 0 || block == NULL)
-	{
-		printf("bad arg for shifting column\n");
-		return 0;
-	}
 	
 	col &= (BLOCK_WIDTH - 1);
 	ticks &= (BLOCK_HEIGHT - 1);
 	dir &= 0x1;
 	
-	if(!ticks)
-	{
-		return 1;
-	}
+	if(ticks == 0) return 1;
 	
 	tempCol = malloc(BLOCK_HEIGHT - ticks);
 	
-	for(uint32_t i = 0; i < BLOCK_DATA_SIZE; i++)
-	{
-		checksum1 += block->data[i];
-	}
-
 	if(dir == SHIFT_DOWN)
 	{
 		// save the wrapped bytes
 
 		for(uint32_t i = BLOCK_HEIGHT - ticks, j = 0; i < BLOCK_HEIGHT; i++, j++)
 		{
-			tempCol[j] = getByte(block, col, i);
+			tempCol[j] = getByte(blockPtr, col, i);
 		}
 
 		// copy body
 
 		for(uint32_t i = BLOCK_HEIGHT - 1; i > ticks - 1; i--)
 		{
-			Byte byte = getByte(block, col, i - ticks);
-			setByte(byte, block, col, i);
+			Byte byte = getByte(blockPtr, col, i - ticks);
+			setByte(byte, blockPtr, col, i);
 		}
 
 		// copy wrapped bytes
@@ -235,7 +220,7 @@ int shiftCol(struct DataBlock *block, uint32_t col, uint32_t ticks, enum Directi
 		for(uint32_t i = 0; i < ticks; i++)
 		{
 			Byte byte = tempCol[i];
-			setByte(byte, block, col, i);
+			setByte(byte, blockPtr, col, i);
 		}
 	}
 	
@@ -245,15 +230,15 @@ int shiftCol(struct DataBlock *block, uint32_t col, uint32_t ticks, enum Directi
 
 		for(uint32_t i = 0; i < ticks; i++)
 		{
-			tempCol[i] = getByte(block, col, i);
+			tempCol[i] = getByte(blockPtr, col, i);
 		}
 
 		// copy body
 
 		for(uint32_t i = 0; i < BLOCK_HEIGHT - ticks; i++)
 		{
-			Byte byte = getByte(block, col, i + ticks);
-			setByte(byte, block, col, i);
+			Byte byte = getByte(blockPtr, col, i + ticks);
+			setByte(byte, blockPtr, col, i);
 		}
 
 		// copy wrapped bytes
@@ -261,57 +246,26 @@ int shiftCol(struct DataBlock *block, uint32_t col, uint32_t ticks, enum Directi
 		for(uint32_t i = BLOCK_HEIGHT - ticks, j = 0; i < BLOCK_HEIGHT; i++, j++)
 		{
 			Byte byte = tempCol[j];
-			setByte(byte, block, col, i);
+			setByte(byte, blockPtr, col, i);
 		}
-	}
-	
-	// debugging checksum
-	
-	for(uint32_t i = 0; i < BLOCK_WIDTH * BLOCK_HEIGHT; i++)
-	{
-		checksum2 += block->data[i];
-	}
-	if(checksum1 != checksum2)
-	{
-		printf("something went wrong in shifting column %u\n", col);
 	}
 	
 	return 1;
 }
 
-int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Direction dir)
+int shiftRow(Byte *blockPtr, uint32_t row, uint32_t ticks, enum Direction dir)
 {	
 	Byte *tempRow;
 	Byte byte;
 	uint32_t i, j;
-	size_t checksum1 = 0, checksum2 = 0;
-
-	if(row < 0 || dir < 0)
-	{
-		printf("bad arg for shifting row\n");
-		return 0;
-	}
 	
 	row &= (BLOCK_HEIGHT - 1);
 	ticks &= (BLOCK_WIDTH - 1);
 	dir &= 0x1;
 	
-	if(ticks == 0)
-	{
-		return 1;
-	}
+	if(ticks == 0) return 1;
 	
 	tempRow = malloc(ticks);
-	
-	// debugging checksum
-	
-	for(uint32_t i = 0; i < BLOCK_DATA_SIZE; i ++)
-	{
-		checksum1 += block->data[i];
-	}
-	
-	// 0111 0111   0111 0111   0111 0111   0111 0111   0111 0111   0111 0111
-	// 0111 0111   0111 0111   0111 0111   0111 0111   0111 0111   0111 0111
 	
 	if(dir == SHIFT_LEFT)
 	{
@@ -319,15 +273,15 @@ int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Directi
 		
 		for(i = 0; i < ticks; i++)
 		{
-			tempRow[i] = getByte(block, i, row);
+			tempRow[i] = getByte(blockPtr, i, row);
 		}
 		
 		// copy body
 		
 		for(i = 0; i < BLOCK_WIDTH - ticks; i++)
 		{
-			byte = getByte(block, i + ticks, row);
-			setByte(byte, block, i, row);
+			byte = getByte(blockPtr, i + ticks, row);
+			setByte(byte, blockPtr, i, row);
 		}
 		
 		// copy wrapped bytes
@@ -335,7 +289,7 @@ int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Directi
 		for(i = BLOCK_WIDTH - ticks, j = 0; i < BLOCK_WIDTH; i++, j++)
 		{
 			byte = tempRow[j];
-			setByte(byte, block, i, row);
+			setByte(byte, blockPtr, i, row);
 		}
 	}
 	
@@ -345,15 +299,15 @@ int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Directi
 		
 		for(i = BLOCK_WIDTH - ticks, j = 0; i < BLOCK_WIDTH; i++, j++)
 		{
-			tempRow[j] = getByte(block, i, row);
+			tempRow[j] = getByte(blockPtr, i, row);
 		}
 		
 		// copy body
 		
 		for(i = BLOCK_WIDTH - 1; i >= ticks; i--)
 		{
-			byte = getByte(block, i - ticks, row);
-			setByte(byte, block, i, row);
+			byte = getByte(blockPtr, i - ticks, row);
+			setByte(byte, blockPtr, i, row);
 		}
 		
 		// copy wrapped bytes
@@ -361,32 +315,21 @@ int shiftRow(struct DataBlock *block, uint32_t row, uint32_t ticks, enum Directi
 		for(i = 0; i < ticks; i++)
 		{
 			byte = tempRow[i];
-			setByte(byte, block, i, row);
+			setByte(byte, blockPtr, i, row);
 		}
-	}
-	
-	for(uint32_t i = 0; i < BLOCK_DATA_SIZE; i ++)
-	{
-		checksum2 += block->data[i];
-	}
-	
-	if(checksum1 != checksum2)
-	{
-		printf("shifting row error: row %d\n", row);
 	}
 	
 	return 1;
 }
 
-Byte getByte(struct DataBlock *block, int col, int row)
+Byte getByte(Byte *blockPtr, int col, int row)
 {
-	return(block->data[col + (row*BLOCK_WIDTH)]);
+	return(blockPtr[col + (row*BLOCK_WIDTH)]);
 }
 
-Byte setByte(Byte value, struct DataBlock *block, int col, int row)
+void setByte(Byte value, Byte *blockPtr, int col, int row)
 {
-	block->data[col + (row*BLOCK_WIDTH)] = value;
-	return value;
+	blockPtr[col + (row*BLOCK_WIDTH)] = value;
 }
 
 void printBlocks(struct DataBlock *first)

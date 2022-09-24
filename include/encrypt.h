@@ -5,14 +5,20 @@
 extern "C" {
 #endif
 
+#include "../include/file.h"
 #include "../include/data.h"
+#include "../include/sha256.h"
+#include "../include/password.h"
 
-#define ENCRYPTION_ROUNDS 64
+#define ENCRYPTION_ROUNDS         32
 
-enum Options {ENCRYPT = 1, DECRYPT};
+enum Options {ENCRYPT = 1, DECRYPT = 2};
 
-struct Data *encryptData(struct Data *data, char *key);
-struct Data *decryptData(struct Data *data, char *key);
+uint32_t encryptData(struct file* file, struct password *password);
+uint32_t decryptData(struct file* file, struct password *password);
+
+void doByteSubstitution(struct Data *data, uint8_t *shaArray);
+void undoByteSubstitution(struct Data *data, uint8_t *shaArray);
 
 #ifdef __cplusplus
 }
