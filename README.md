@@ -4,7 +4,8 @@
 
  The fact that ***Bitslide*** is open source **does not** mean that it can be hacked, because the encryption process is entirely dependent on the password. In other words, if you change one character of your password, the encrypted output will be entirely different! If your password is at least 8 characters and not obvious, it would take many millions of years for a hacker to crack it.
 
-[a link] (https://github.com/randomguy70/BitSlide/blob/main/images/BitSlide_Demo.png)
+![Demo Image] (https://github.com/randomguy70/BitSlide/blob/main/images/BitSlide_Demo.png)
+
 # Building
 
 ***BitSlide*** is written in pure C as a command-line tool, so building it from source is super easy!
