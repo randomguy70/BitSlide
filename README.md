@@ -4,6 +4,7 @@
 
  The fact that ***Bitslide*** is open source **does not** mean that it can be hacked, because the encryption process is entirely dependent on the password. In other words, if you change one character of your password, the encrypted output will be entirely different! If your password is at least 8 characters and not obvious, it would take a very very long time for a hacker to crack it.
 
+*Note: When you encrypt a file, it will become slightly larger due to stored metadata that ensures the file has not been tampered with.
 ![Demo Image](https://github.com/randomguy70/BitSlide/blob/main/images/eyeCandy.gif)
 
 # Building
